@@ -5,9 +5,141 @@ var amigo = require('amigo2');
 var underscore = require('underscore');
 var graph_api = require('bbop-graph-noctua');
 var minerva_requests = require('minerva-requests');
-var solrautocomplete = require('bbop-widget-solr-autocomplete');
+// var solrautocomplete = require('bbop-widget-solr-autocomplete');
 var angular = require('angular');
 var widgetry = require('noctua-widgetry');
+var selectize = require('selectize');
+
+
+var createSolrAutocompleteForElement = function(element, options) {
+  var jqElement = jQuery(element);
+  console.log('Creating solr-autocomplete widget for ' + element);
+  jqElement.solrautocomplete(options);
+};
+
+var solrautocomplete = {
+  createSolrAutocompleteForElement: createSolrAutocompleteForElement
+};
+window.Solrautocomplete = solrautocomplete;
+
+jQuery.widget('widget.solrautocomplete', {
+  options: {
+    webserviceUrl: "http://localhost:8983/solr/select",
+    onChange: console.log,
+    required: false,
+    optionDisplay: null,
+    itemDisplay: null,
+    valueField: null,
+    searchField: null,
+    queryData: null,
+    golrManager: null,
+    maxItems: 1
+  },
+
+  _create: function() {
+    // redefine the variables to avoid conflicts with selectize's scope
+    var widgetOnChange = this.options.onChange;
+    var widgetWebservicerUrl = this.options.webserviceUrl;
+    var widgetRequired = this.options.required;
+    var widgetOptionDisplay = this.options.optionDisplay;
+    var widgetItemDisplay = this.options.itemDisplay;
+    var widgetValueField = this.options.valueField;
+    var widgetSearchField = this.options.searchField;
+    var widgetQueryData = this.options.queryData;
+    var widgetGolrManager = this.options.golrManager;
+    var widgetMaxItems = this.options.maxItems;
+    var _currentValue = null;
+
+    // Right label for user feedback
+    var feedbackLabel = jQuery('<div class="feedback_label"></div>');
+    this.element.before(feedbackLabel);
+
+    var selectized = this.element.selectize({
+      valueField: widgetValueField,
+      searchField: widgetSearchField,
+      create: false,
+      render: {
+        option: widgetOptionDisplay,
+        item: widgetItemDisplay
+      },
+      load: function(query, callback) {
+        if (!query.length) return callback();
+
+        var customCallBack = function(res) {
+          _updateHits(res._raw.response.numFound);
+          callback(res._raw.response.docs);
+        };
+        widgetGolrManager.register('search', 'foo', customCallBack);
+        widgetGolrManager.set_query(widgetQueryData(query));
+        widgetGolrManager.search();
+
+        // jQuery.ajax({
+        //     url: widgetWebservicerUrl,
+        //     data: widgetQueryData(query),
+        //     dataType: 'jsonp',
+        //     jsonp: 'json.wrf',
+        //     error: function() {
+        //         callback();
+        //     },
+        //     success: function(res) {
+        //         _updateHits(res.response.numFound);
+        //         //TODO load underscore.js
+        //         //var uniq_only = _.uniq(res.response.docs) // remove potential duplicates
+        //         //callback(uniq_only);
+        //         callback(res.response.docs);
+        //     }
+        // });
+      },
+      onChange: function(value) {
+        widgetOnChange(value);
+        _checkSanity(value);
+        _currentValue = value;
+      },
+      onType: function(str) {
+        if (widgetMaxItems == 1) {
+          _clearCache(); // in order to request the server at each typing, only for single items
+        }
+      },
+      onBlur: function() {
+        _checkSanity(_currentValue);
+      },
+      maxItems: widgetMaxItems
+    });
+
+    var _checkSanity = function(value) {
+      if (widgetRequired && (value == null || value == "")) {
+        feedbackLabel.show();
+        feedbackLabel.text('Cannot be empty!');
+      } else {
+        feedbackLabel.hide();
+        feedbackLabel.text('');
+      }
+    }
+
+    var _clearCache = function() {
+      selectized[0].selectize.clearCache("option");
+      selectized[0].selectize.clearOptions();
+    };
+
+    var _updateHits = function(h) {
+      feedbackLabel.show();
+      feedbackLabel.text(h + ' hits');
+    };
+
+  },
+
+  _destroy: function() {
+    selectized[0].selectize.destroy();
+  },
+
+
+  _setOptions: function(options) {
+    this._super(options);
+    this.refresh();
+  }
+});
+
+
 
 
 function NoctuaBasicController($animate, $timeout, $location, $anchorScroll, toastr, $window, $rootScope) {
@@ -171,12 +303,14 @@ function NoctuaBasicController($animate, $timeout, $location, $anchorScroll, toa
   // });
 
   getExistingIndividualId = function(id, nodes) {
-    var hit = null; // jQuery loop does not stop on return
-    jQuery.each(nodes, function(key, value) {
+    var hit = null;
+    for (var key in nodes) {
+      var value = nodes[key];
       if (isType(id, value)) {
         hit = value;
+        break;
       }
-    });
+    }
     if (hit == null) {
       return null;
     } else {
@@ -209,6 +343,10 @@ function NoctuaBasicController($animate, $timeout, $location, $anchorScroll, toa
     } else {
       return "";
     }
+  }
+
+  build_joined_label = function(id, label) {
+    return id === label ? label : (id + ' ' + label);
   }
 
   refresh_ui = function() {
@@ -589,7 +727,7 @@ function NoctuaBasicController($animate, $timeout, $location, $anchorScroll, toa
         age_of_onset_id = extract_class_id_from_node(age_of_onset_node);
         age_of_onset_node_id = age_of_onset_node.id();
         age_of_onset_label = extract_class_label_from_node(age_of_onset_node);
-        age_of_onset_display = age_of_onset_id + " (" + age_of_onset_label + ")";
+        age_of_onset_display = build_joined_label(age_of_onset_id, age_of_onset_label);
       }
 
       var disease_node = graph.get_node(current_edge.source());
@@ -613,7 +751,7 @@ function NoctuaBasicController($animate, $timeout, $location, $anchorScroll, toa
       var reference = [];
       var evidences = underscore.map(evidence_annotations, function(ev) {
         var evidence_node = graph.get_node(ev);
-        return extract_class_id_from_node(evidence_node) + " (" + extract_class_label_from_node(evidence_node) + ")";
+        return build_joined_label(extract_class_id_from_node(evidence_node), extract_class_label_from_node(evidence_node));
       });
       var counter = 0;
       var evidence_metadata = underscore.map(evidence_annotations, function(ev) {
@@ -648,16 +786,13 @@ function NoctuaBasicController($animate, $timeout, $location, $anchorScroll, toa
         evidences = "";
       }
 
-      that.grid_model.push({
-        "disease": extract_class_id_from_node(disease_node) + " (" + extract_class_label_from_node(disease_node) + ")",
+      var entry = {
         "disease_node_id": disease_node.id(),
         "disease_id": extract_class_id_from_node(disease_node),
         "disease_label": extract_class_label_from_node(disease_node),
-        "phenotype": extract_class_id_from_node(phenotype_node) + " (" + extract_class_label_from_node(phenotype_node) + ")",
         "phenotype_node_id": phenotype_node.id(),
         "phenotype_id": extract_class_id_from_node(phenotype_node),
         "phenotype_label": extract_class_label_from_node(phenotype_node),
-        "ageofonset": age_of_onset_display,
         "ageofonset_node_id": age_of_onset_node_id,
         "ageofonset_id": age_of_onset_id,
         "ageofonset_label": age_of_onset_label,
@@ -665,7 +800,13 @@ function NoctuaBasicController($animate, $timeout, $location, $anchorScroll, toa
         "evidence_metadata": evidence_metadata,
         "reference": reference.join(),
         "description": description
-      });
+      };
+
+      entry.disease = build_joined_label(entry.disease_id, entry.disease_label);
+      entry.phenotype = build_joined_label(entry.phenotype_id, entry.phenotype_label);
+      entry.ageofonset = build_joined_label(entry.ageofonset_id, entry.ageofonset_label);
+
+      that.grid_model.push(entry);
     }
   }
 
@@ -705,16 +846,10 @@ function NoctuaBasicController($animate, $timeout, $location, $anchorScroll, toa
       tmp_graph.load_data_basic(resp.data());
       graph.merge_special(tmp_graph);
 
-      // var disease_selectize = jQuery('#select_disease')[0].selectize;
-      // disease_selectize.clear(true);
       that.selected_disease = null;
 
-      // var phenotype_selectize = jQuery('#select_phenotype')[0].selectize;
-      // phenotype_selectize.clear(true);
       that.selected_phenotype = null;
 
-      // var ageofonset_selectize = jQuery('#select_ageofonset')[0].selectize;
-      // ageofonset_selectize.clear(true);
       that.selected_ageofonset = null;
 
       that.selected_ev_ref_list = [];

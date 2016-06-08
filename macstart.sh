@@ -1,3 +1,4 @@
+set -x
 tcmd gulp run-minerva
 wait-on tcp:6800
 tcmd gulp run-barista

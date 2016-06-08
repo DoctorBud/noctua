@@ -1,6 +1,5 @@
 var angular = require('angular');
 require('bs-table');
-require('angular-xeditable');
 require('angular-ui-bootstrap');
 require('angular-animate'); // https://github.com/Foxandxss/angular-toastr
 require('angular-toastr'); // https://github.com/Foxandxss/angular-toastr
@@ -10,8 +9,7 @@ var app = angular.module('noctuaBasicApp',
   	 'ui.bootstrap',
   	 require('angular-aria'),
      'ngAnimate', 'toastr',
-  	 "bsTable",
-  	 'xeditable']);
+  	 "bsTable"]);
 
 
 app.config(['toastrConfig', function(toastrConfig) {
@@ -54,13 +52,6 @@ app.config(['toastrConfig', function(toastrConfig) {
 //   };
 // });
 
-// Change AngularJS markup's template to avoid clashes with mustache templates
-// .config(function($interpolateProvider) {
-//   $interpolateProvider.startSymbol('{[{').endSymbol('}]}');
-// })
-app.run(['editableOptions', function(editableOptions) { // specific to xeditable library
-    editableOptions.theme = 'bs3'; // bootstrap3 theme. Can be also 'bs2', 'default'
-  }]);
 
 require('./NoctuaBasicController.js');
 

@@ -175,230 +175,226 @@
       <div
         class="row">
 
-        <div
-          ng-class="basic.editing_row === entry ? 'association-entry-editing' : 'association-entry'"
-          ng-repeat="entry in basic.grid_model track by $index">
-          <table
-            class="table association-table">
 
-            <tbody>
-              <tr>
-                <th colspan="2">Disease</th>
-                <td
-                  ng-hide="basic.editing_row !== entry"
-                  colspan="10">
-                  <select
-                    class="form-control"
-                    id="select_disease_{{$index}}"
-                    placeholder="Pick a Disease...">
-                  </select>
-                </td>
-                <td
-                  ng-hide="basic.editing_row === entry"
-                  colspan="10">
-                  <a
-                    target="_blank"
-                    href="http://monarchinitiative.org/resolve/{{entry.disease_id}}">
-                      {{entry.disease}}
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <th colspan="2">Phenotype</th>
-                <td
-                  ng-hide="basic.editing_row !== entry"
-                  colspan="10">
-                  <select
-                    class="form-control"
-                    id="select_phenotype_{{$index}}"
-                    placeholder="Pick a Phenotype...">
-                  </select>
-                </td>
-                <td
-                  ng-hide="basic.editing_row === entry"
-                  colspan="10">
-                  <a
-                    target="_blank"
-                    href="http://monarchinitiative.org/resolve/{{entry.phenotype_id}}">
-                      {{entry.phenotype}}
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <th colspan="2">Age of Onset</th>
-                <td
-                  ng-hide="basic.editing_row !== entry"
-                  colspan="10">
-                  <select
-                    class="form-control"
-                    id="select_ageofonset_{{$index}}"
-                    placeholder="Pick an Age of Onset...">
-                  </select>
-                </td>
-                <td
-                  ng-hide="basic.editing_row === entry"
-                  colspan="10">
-                  <a
-                    target="_blank"
-                    href="http://monarchinitiative.org/resolve/{{entry.ageofonset_id}}">
-                      {{entry.ageofonset}}
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <th colspan="2">Description</th>
-                <td
-                  ng-hide="basic.editing_row !== entry"
-                  colspan="10">
-                  <textarea
-                    class="form-control" rows="2" ng-model="basic.selected_description"></textarea>
-                </td>
+        <table
+          class="col-xs-12 table table-bordered association-table">
 
-                <td
-                  ng-hide="basic.editing_row === entry"
-                  colspan="10">
-                  {{entry.description}}
-                </td>
-              </tr>
-              <tr
-                ng-class="basic.editing_row === entry ? 'evidence-row-editing' : 'evidence-row'"
-                ng-repeat="ev_ref in entry.evidence_metadata track by $index">
-                <th colspan="2">
-                Evidence
-                </th>
+          <thead>
+            <tr>
+              <th colspan="3">Disease</th>
+              <th colspan="3">Phenotype</th>
+              <th colspan="3">Age of Onset</th>
+              <th colspan="3">Description</th>
+              <th colspan="8">Evidence</th>
+              <th>&nbsp;</th>
+            </tr>
+          </thead>
 
-                <td
-                  ng-hide="basic.editing_row !== entry"
-                  colspan="9">
-
-                  <div class="row">
-                    <div class="col-xs-12">
-                      <select class="form-control" id="{{ev_ref.htmlid}}_{{$parent.$index}}_{{$index}}" placeholder="Select evidence..." ng-model="ev_ref.ev"></select>
-                    </div>
+          <tbody>
+            <tr ng-repeat="entry in basic.grid_model track by $index">
+              <td colspan="3"
+                ng-hide="basic.editing_row !== entry">
+                <div class="row">
+                  <div class="col-xs-12">
+                    <select
+                      class="form-control"
+                      id="select_disease_{{$index}}"
+                      placeholder="Pick a Disease...">
+                    </select>
                   </div>
-                  <div class="row" style="margin:3px -35px 0 -35px;padding:0;">
-                    <div class="col-xs-12">
+                </div>
+              </td>
+              <td colspan="3"
+                ng-hide="basic.editing_row === entry">
+                <a
+                  target="_blank"
+                  href="http://monarchinitiative.org/resolve/{{entry.disease_id}}">
+                    {{entry.disease}}
+                </a>
+              </td>
+
+              <td colspan="3"
+                ng-hide="basic.editing_row !== entry">
+                <div class="row">
+                  <div class="col-xs-12">
+                    <select
+                      class="form-control"
+                      id="select_phenotype_{{$index}}"
+                      placeholder="Pick a Phenotype...">
+                    </select>
+                  </div>
+                </div>
+              </td>
+              <td colspan="3"
+                ng-hide="basic.editing_row === entry">
+                <a
+                  target="_blank"
+                  href="http://monarchinitiative.org/resolve/{{entry.phenotype_id}}">
+                    {{entry.phenotype}}
+                </a>
+              </td>
+
+              <td colspan="3"
+                ng-hide="basic.editing_row !== entry">
+                <div class="row">
+                  <div class="col-xs-12">
+                    <select
+                      class="form-control"
+                      id="select_ageofonset_{{$index}}"
+                      placeholder="Pick an Age of Onset...">
+                    </select>
+                  </div>
+                </div>
+              </td>
+              <td colspan="3"
+                ng-hide="basic.editing_row === entry">
+                <a
+                  target="_blank"
+                  href="http://monarchinitiative.org/resolve/{{entry.ageofonset_id}}">
+                    {{entry.ageofonset}}
+                </a>
+              </td>
+
+
+              <td colspan="3"
+                ng-hide="basic.editing_row !== entry">
+                <textarea
+                  class="form-control"
+                  rows="2"
+                  ng-model="basic.selected_description">
+                </textarea>
+              </td>
+
+              <td colspan="3"
+                ng-hide="basic.editing_row === entry">
+                {{entry.description}}
+              </td>
+
+              <td colspan="8"
+                ng-class="basic.editing_row === entry ? 'evidence-row-editing' : 'evidence-row'">
+                <div
+                  ng-hide="basic.editing_row !== entry">
+
+                  <div
+                    ng-repeat="ev_ref in entry.evidence_metadata track by $index">
+                    <div class="row">
+                      <div class="col-xs-11">
+                        <select
+                          class="form-control"
+                          id="{{ev_ref.htmlid}}_{{$parent.$index}}_{{$index}}"
+                          placeholder="Select evidence..." ng-model="ev_ref.ev">
+                        </select>
+                      </div>
+                      <button
+                        ng-hide="!$first"
+                        class="xcol-xs-1 btn btn-secondary btn-xs"
+                        style="margin:0;margin-left:-10px;"
+                        ng-click="basic.add_ev(basic.selected_ev_ref_list, $parent.$index)">
+                        <i class="glyphicon glyphicon-plus"></i>
+                      </button>
+                    </div>
+
+                    <div
+                      ng-repeat="ref in ev_ref.ref_list">
                       <div
-                        class="form-horizontal"
-                        ng-repeat="ref in ev_ref.ref_list">
-                        <div
-                          class="xform-group">
-                          <label
-                            class="col-xs-2 control-label"
-                            style="font-size:0.8em;font-weight:400;color:#555;margin:0;padding:0;"
-                            for="{{ev_ref.htmlid + ref.htmlid}}_{{$parent.$index}}_{{$index}}">
-                            Reference
-                          </label>
-                          <div
-                            class="col-xs-9">
-                            <input
-                              type="text"
-                              class="form-control"
-                              id="{{ev_ref.htmlid + ref.htmlid}}_{{$parent.$index}}_{{$index}}"
-                              placeholder="Enter supporting reference (e.g., PMID:1234)"
-                              ng-model="ref.ref">
-                            </input>
-                          </div>
-                          <div class="col-xs-1">
-                            <button
-                              type="submit"
-                              ng-hide="!$first"
-                              class="btn btn-secondary btn-xs"
-                              style="margin:0 0 0 -15px;xpadding:0;"
-                              ng-click="basic.add_ref(ev_ref)">
-                              <i class="glyphicon glyphicon-plus"></i>
-                            </button>
-                          </div>
+                        class="row"
+                        style="padding:0;">
+                        <label
+                          class="col-xs-2"
+                          style="font-size:0.9em;font-weight:400;color:#555;margin:2px -20px 2px 20px;padding:0;"
+                          for="{{ev_ref.htmlid + ref.htmlid}}_{{$parent.$index}}_{{$index}}">
+                          Ref
+                        </label>
+                        <div class="col-xs-9">
+                          <input
+                            class="form-control"
+                            style="font-size:0.9em;font-weight:400;color:#555;"
+                            type="text"
+                            id="{{ev_ref.htmlid + ref.htmlid}}_{{$parent.$index}}_{{$index}}"
+                            placeholder="Enter supporting reference (e.g., PMID:1234)"
+                            ng-model="ref.ref">
+                          </input>
                         </div>
+                        <button
+                          type="submit"
+                          ng-hide="!$first"
+                          class="xcol-xs-1 btn btn-secondary btn-xs"
+                          style="margin:0;margin-left:-10px;"
+                          ng-click="basic.add_ref(ev_ref)">
+                          <i class="glyphicon glyphicon-plus"></i>
+                        </button>
                       </div>
                     </div>
                   </div>
-                </td>
-                <th
-                  ng-hide="basic.editing_row !== entry"
-                  colspan="1">
-                  <button
-                    ng-hide="!$first"
-                    class="btn btn-secondary btn-xs"
-                    ng-click="basic.add_ev(basic.selected_ev_ref_list, $parent.$index)">
-                    <i class="glyphicon glyphicon-plus"></i>
-                  </button>
-                </th>
-                <td
-                  ng-hide="basic.editing_row === entry"
-                  colspan="10">
-                  <a
-                    target="_blank"
-                    href="http://purl.obolibrary.org/obo/{{basic.convertECOId(ev_ref.id)}}">
-                    {{ev_ref.label}}
-                  </a>
-
+                </div>
+                <div
+                  ng-hide="basic.editing_row === entry">
                   <div
-                    ng-repeat="ref in ev_ref.ref_list">
-                    &nbsp;&nbsp;&nbsp;&nbsp;{{ref.ref}}
+                    ng-repeat="ev_ref in entry.evidence_metadata track by $index">
+                    <a
+                      target="_blank"
+                      href="http://purl.obolibrary.org/obo/{{basic.convertECOId(ev_ref.id)}}">
+                      {{ev_ref.label}}
+                    </a>
+
+                    <div
+                      ng-repeat="ref in ev_ref.ref_list">
+                      &nbsp;&nbsp;&nbsp;&nbsp;{{ref.ref}}
+                    </div>
                   </div>
-                </td>
-              </tr>
+                </div>
+              </td>
 
         <%#barista_token%>
-              <tr
+              <td
                 ng-hide="basic.editing_row === entry"
                 class="action-row">
-                <td colspan="2">
-                  &nbsp;
-                </td>
-                <td colspan="3">
-                  <button type="button" class="btn btn-block btn-primary btn-xs"
-                    ng-disabled="basic.editing_row"
-                    ng-click="basic.editRow(entry, $index, false)">Edit</button>
-                </td>
-                <td colspan="3" >
-                  <button
-                    ng-disabled="basic.editing_row"
-                    type="button" class="btn btn-block btn-primary btn-xs" ng-click="basic.duplicateRow(entry, $index)">Duplicate</button>
-                </td>
-                <td colspan="3" >
                   <button
                     type="button"
+                    title="Edit"
+                    class="btn btn-primary btn-xs"
                     ng-disabled="basic.editing_row"
-                    class="btn btn-block btn-warning btn-xs"
-                    ng-click="basic.deleteRow(entry.disease_node_id, entry.phenotype_node_id, entry.ageofonset_node_id)">Delete</button>
-                </td>
-                <td colspan="1">
-                  &nbsp;
-                </td>
-              </tr>
+                    ng-click="basic.editRow(entry, $index, false)">
+                    <i class="glyphicon glyphicon-pencil"></i>
+                  </button>
+                  <button
+                    ng-disabled="basic.editing_row"
+                    type="button"
+                    title="Duplicate"
+                    class="btn btn-primary btn-xs" ng-click="basic.duplicateRow(entry, $index)">
+                    <i class="glyphicon glyphicon-duplicate"></i>
+                  </button>
+                  <button
+                    type="button"
+                    title="Delete"
+                    ng-disabled="basic.editing_row"
+                    class="btn btn-warning btn-xs"
+                    ng-click="basic.deleteRow(entry.disease_node_id, entry.phenotype_node_id, entry.ageofonset_node_id)">
+                    <i class="glyphicon glyphicon-trash"></i>
+                  </button>
+              </td>
 
-              <tr
+              <td
                 ng-hide="basic.editing_row !== entry"
                 class="action-row">
-                <td colspan="2">
-
-                </td>
-
-                <td colspan="3">
-                  <button type="button" class="btn btn-block btn-success btn-xs"
-                    ng-disabled="!basic.isValidAssociation()"
-                    ng-click="basic.saveEditedRow()">Save</button>
-                </td>
-                <td colspan="2">
-                  &nbsp;
-                </td>
-                <td colspan="3" >
-                  <button type="button" class="btn btn-block btn-warning btn-xs"
-                    ng-click="basic.cancelEditRow($index)">Cancel</button>
-                </td>
-                <td colspan="2">
-                  &nbsp;
-                </td>
-              </tr>
+                <button type="button" class="btn btn-success btn-xs"
+                  ng-disabled="!basic.isValidAssociation()"
+                  ng-click="basic.saveEditedRow()">
+                  <i class="glyphicon glyphicon-save"></i>
+                </button>
+                <button type="button" class="btn btn-warning btn-xs"
+                  ng-click="basic.cancelEditRow($index)">
+                  <i class="glyphicon glyphicon-ban-circle"></i>
+                </button>
+                &nbsp;
+              </td>
         <%/barista_token%>
 
-            </tbody>
-          </table>
 
 
-        </div>
+            </tr>
+          </tbody>
+        </table>
 
         <div style="margin:10px;">
           <%#barista_token%>
