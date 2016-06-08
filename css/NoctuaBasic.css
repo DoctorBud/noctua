@@ -1,3 +1,37 @@
+#noctua-app div.selectize-control div.selectize-input {
+  font-size:0.9em;
+  line-height:1em;
+}
+
+
+#noctua-app div.selectize-control div.selectize-input::after {
+  content: ' ';
+  display: block;
+  clear: left;
+  position:absolute;
+  bottom:0;
+  right:2px;
+}
+
+
+#noctua-app div.selectize-control div.selectize-dropdown {
+  margin:0;
+  padding:0;
+  font-size:0.9em;
+}
+
+#noctua-app div.feedback_label {
+  position:absolute;
+  border:1px solid darkgray;
+  background:lightyellow;
+  display:none;
+  padding:2px;
+  top:-20px;
+  z-index:3333;
+  left:15px;
+  right:15px;
+}
+
 .md-toast.error {
     background-color: red;
 }
@@ -27,6 +61,12 @@ div.association-entry-editing {
 table.table.association-table {
   table-layout: fixed;
   margin:0;
+  padding:0;
+  font-size:0.9em;
+}
+
+.glyphicon-duplicate:before {
+  content: "\e224";
 }
 
 table.table.association-table thead tr,
@@ -41,14 +81,14 @@ table.table.association-table tbody tr td
   word-wrap: break-word;
   padding: 3px;
   margin: 1px;
-  border:none;
+  /* border:none; */
 }
 
 
 
 table.table.association-table .action-row {
-  margin:5px 0 0 0;
-  padding:0;
+  margin:0;
+  padding:2px;
 }
 
 

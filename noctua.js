@@ -580,60 +580,10 @@ var NoctuaLauncher = function(){
 				    '/selectize.css',
 				    '/selectize.bootstrap3.css',
 				    '/selectize.custom.css',
-				    '/xeditable.css',
 				    '/angular-toastr.css',
 				    '/toastr_custom.css'
 				]
 		    });
-	 //    var tmpl_args = {
-		// 'title': notw + ': Simple',
-		// 'barista_token': barista_token,
-	 //    'noctua_context': noctua_context,
-	 //    'noctua_landing': noctua_landing,
-	 //    'noctua_branding': noctua_branding,
-		// 'barista_login': barista_login,
-		// 'barista_logout': barista_logout,
-		// 'pup_tent_js_variables': [
-		//     {name: 'global_minerva_definition_name',
-		//      value: self.minerva_definition_name },
-		//     {name: 'global_known_relations',
-		//      value: self.known_relations},
-		//     {name: 'global_barista_token',
-		//      value: barista_token},
-		//     {name: 'global_barista_location',
-		//      value: self.barista_location },
-		//     {name: 'global_golr_server',
-		//      value: golr_server_location},
-		//     {name: 'global_golr_neo_server',
-		//      value: golr_neo_server_location},
-		//     {name: 'model_id',
-		//      value: model_id}
-		// ],
-		// 'pup_tent_js_libraries': [
-		//     // TODO load via npm
-		//     //'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js',
-  //   		    //'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-route.min.js',
-  //   		    //'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-animate.min.js',
-  //   		    //'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-aria.min.js',
-  //   		    //'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-touch.min.js',
-  //   		    //'https://ajax.googleapis.com/ajax/libs/angular_material/0.8.3/angular-material.min.js',
-		//     //'/selectize.min.js',
-		//     //'/xeditable.min.js',
-		//     //'/bs-table.min.js',
-		//     //'/bbop-widget-solr-autocomplete.js',
-		//     '/deploy/js/NoctuaBasic/NoctuaBasicApp.js'
-		// ],
-		// 'pup_tent_css_libraries': [
-		//     '/noctua_common.css',
-		//     '/NoctuaBasic.css',
-		//     '/selectize.css',
-		//     '/selectize.bootstrap3.css',
-		//     '/selectize.custom.css',
-		//     '/xeditable.css'
-		//     // ,'/angular-material.css'
-		//     //'https://ajax.googleapis.com/ajax/libs/angular_material/0.8.3/angular-material.min.css'
-		// ]
-	 //    };
 
 	    var ind = pup_tent.render('noctua_basic.tmpl',
 				      tmpl_args,
