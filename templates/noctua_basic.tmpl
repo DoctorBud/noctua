@@ -172,9 +172,51 @@
         <h5 class="text-center">Annotations</h5>
       </div>
 
+
+      <script type="text/ng-template" id="uiSelect">
+        <ui-select-wrap>
+          <ui-select
+            search-enabled="false"
+            ng-model="MODEL_COL_FIELD"
+            theme="selectize"
+            ng-disabled="disabled"
+            reset-search-input="true"
+            append-to-body="false">
+            <ui-select-match placeholder="Choose...">
+              {{COL_FIELD}}
+            </ui-select-match>
+            <ui-select-choices repeat="item in col.colDef.editDropdownOptionsArray | filter: $select.search">
+              <div ng-bind-html="item.label | highlight: $select.search"></div>
+              <small ng-bind-html="col.colDef.editDropdownOptionsArray.length"></small>
+            </ui-select-choices>
+          </ui-select>
+        </ui-select-wrap>
+      </script>
+
+<!--
+        <div style="background:lightyellow;position:fixed !important;z-index:1000;top:0;right:50px;width:300px;height:200px;padding:10px;">
+          <pre>modelcol: MODEL_COL_FIELD</pre>
+          <pre>col: COL_FIELD</pre>
+          <pre>*modelcol: {{MODEL_COL_FIELD}}</pre>
+          <pre>*col: {{COL_FIELD}}</pre>
+        </div>
+-->
+
+
+      <div
+        ng-if="basic.USE_UI_GRID"
+        class="row">
+        <div
+          id="grid1"
+          ui-grid="basic.gridOptions"
+          ui-grid-edit ui-grid-row-edit ui-grid-cellNav
+          ui-grid-resize-columns ui-grid-auto-resize
+          class="col-xs-12 grid">
+        </div>
+      </div>
+
       <div
         class="row">
-
 
         <table
           class="col-xs-12 table table-bordered association-table">
@@ -408,5 +450,6 @@
           <%/barista_token%>
         </div>
     </div> <!-- ng-hide -->
+
   </div>
 </div>

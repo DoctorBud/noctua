@@ -86,10 +86,12 @@ function _run_cmd_list(commands){
 var paths = {
     // WARNING: Cannot use glob for clients--I use the explicit listing
     // to generate a dynamic browserify set.
+    'form_noctua_clients': [
+    'js/NoctuaBasic/NoctuaBasicApp.js'
+    ],
     'core_noctua_clients': [
-	'js/NoctuaEditor.js',
-	'js/NoctuaLanding.js',
-	'js/NoctuaBasic/NoctuaBasicApp.js'
+    'js/NoctuaEditor.js',
+    'js/NoctuaLanding.js'
     ],
     'core_barista_clients': [
 	'js/BaristaLogin.js',
@@ -212,12 +214,21 @@ var base_build_tasks = [
 ];
 
 // Dynamically define tasks.
+var form_build_tasks = us.clone(base_build_tasks);
+us.each(paths.form_noctua_clients, function(file, index) {
+    var taskname = 'build-client_' + file;
+    form_build_tasks.push(taskname);
+    gulp.task(taskname, function(cb){
+       return _client_compile_task(file);
+    });
+});
+
 var noctua_build_tasks = us.clone(base_build_tasks);
 us.each(paths.core_noctua_clients, function(file, index) {
     var taskname = 'build-client_' + file;
     noctua_build_tasks.push(taskname);
     gulp.task(taskname, function(cb){
-	   return _client_compile_task(file);
+       return _client_compile_task(file);
     });
 });
 
@@ -245,13 +256,22 @@ gulp.task('build', us.union(noctua_build_tasks,
 			    barista_build_tasks,
 			    workbench_build_tasks));
 
+gulp.task('watch', ['watch-noctua', 'watch-form']);
+
 // Rerun tasks when a file changes.
-gulp.task('watch', function(cb) {
-    var basic_client_files = paths.core_noctua_clients.concat('js/NoctuaBasic/NoctuaBasicController.js');
+gulp.task('watch-noctua', function(cb) {
+    var basic_client_files = paths.core_noctua_clients;
     gulp.watch(basic_client_files, noctua_build_tasks);
     gulp.watch(paths.core_barista_clients, barista_build_tasks);
     gulp.watch(paths.core_workbench_clients, workbench_build_tasks);
     //gulp.watch(paths.support, ['build']);
+    cb(null);
+});
+
+// Rerun tasks when a file changes.
+gulp.task('watch-form', function(cb) {
+    var basic_client_files = paths.form_noctua_clients.concat('js/NoctuaBasic/NoctuaBasicController.js');
+    gulp.watch(basic_client_files, form_build_tasks);
     cb(null);
 });
 
