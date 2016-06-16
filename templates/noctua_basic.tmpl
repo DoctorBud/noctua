@@ -1,155 +1,373 @@
 {{=<% %>=}}
 
-<nav id="navbar" class="navbar navbar-inverse navbar-static-top">
-  <div class="container-fluid">
+<div
+  ng-app="noctuaBasicApp" ng-strict-di
+  ng-controller="NoctuaBasicController as basic">
 
-    <!-- Button on collapse. -->
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
+  <nav id="navbar" class="navbar navbar-inverse navbar-static-top">
+    <div class="container-fluid">
 
-      <a
-        href="<%noctua_landing%>"
-        class="navbar-brand branding-logo-<%noctua_context%>">
-        &nbsp;
-      </a>
-    </div>
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
 
-    <div class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-        <li class="navbar-tab active">
-          <a
-        <%#barista_token%>
-            href="/?barista_token=<%barista_token%>"
-        <%/barista_token%>
-        <%^barista_token%>
-            href="/"
-        <%/barista_token%>
-            class="branding-<%noctua_context%>">
-            <%noctua_branding%>
-          </a>
-        </li>
-
-        <!-- Help. -->
-        <li id="about_trigger" class="navbar-tab">
-          <a
-            href="<%noctua_landing%>#about">
-              About
-          </a>
-        </li>
-      </ul>
-
-      <div class="nav navbar-right">
-        <%^barista_token%>
-        <!-- Login. -->
-        <a id="action_barista_login" class="btn btn-default navbar-btn" href="<%barista_login%>" title="">Login</a>
-        <%/barista_token%>
-        <%#barista_token%>
-        <!-- Logout. -->
-        <span class="user_name_info">
-          <span id="user_name_info">
-          </span>
-          &nbsp;&nbsp;
-        </span>
-        <a id="action_barista_logout" class="btn btn-default navbar-btn" href="<%barista_logout%>" title="">Logout</a>
-        <%/barista_token%>
-        &nbsp;&nbsp;
+        <a
+          href="<%noctua_landing%>"
+          class="navbar-brand branding-logo-<%noctua_context%>">
+          &nbsp;
+        </a>
       </div>
 
+      <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <li class="navbar-tab active">
+            <a
+              ng-if="!basic.user_token"
+              href="/"
+              class="branding-<%noctua_context%>">
+              <%noctua_branding%>
+            </a>
+            <a
+              ng-if="basic.user_token"
+              href="/?barista_token={{basic.user_token}}"
+              class="branding-<%noctua_context%>">
+              <%noctua_branding%>
+            </a>
+          </li>
+
+          <li id="about_trigger" class="navbar-tab">
+            <a
+              href="<%noctua_landing%>#about">
+                About
+            </a>
+          </li>
+        </ul>
+
+        <div class="nav navbar-right">
+          <a
+            ng-if="!basic.user_token"
+            id="action_barista_login"
+            class="btn btn-default navbar-btn"
+            href="<%barista_login%>"
+            title="">
+            Login
+          </a>
+
+          <span
+            ng-if="basic.user_token"
+            class="user_name_info">
+            <span id="user_name_info">
+            </span>
+            &nbsp;&nbsp;
+            <a
+              id="action_barista_logout"
+              class="btn btn-default navbar-btn"
+              href="<%barista_logout%>"
+              title="">
+              Logout
+              &nbsp;&nbsp;
+            </a>
+          </span>
+        </div>
+
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
 
-<div id="noctua-app" class="container" ng-app="noctuaBasicApp" ng-strict-di>
-  <div ng-controller="NoctuaBasicController as basic" ng-init="basic.init()">
-
-    <div ng-hide="basic.response_model">
+  <div id="noctua-app" class="container">
+    <div ng-if="!basic.response_model">
       <br>
       <hr>
       <h1 class="text-center">Loading Model...</h1>
       <hr>
     </div>
 
-    <div ng-hide="!basic.response_model">
-      <div class="row well well-sm">
+    <div ng-if="basic.response_model">
+      <div class="panel panel-default">
         <div
-          ng-hide="!basic.editingTitle"
-          class="col-xs-8">
-          <input
-            autofocus
-            ng-model="basic.newTitle"
-            type="text"
-            class="form-control"
-            id="modelTitle"
-            placeholder="Title your model">
+          ng-if="!basic.modelSubject"
+          class="panel-heading">
+          <h4 class="text-center">
+          Please choose a disease to annotate.
+          </h4>
         </div>
-        <div
-          ng-hide="!basic.editingTitle"
-          class="col-xs-2">
-          <button
-            type="button"
-            class="btn btn-warning btn-sm"
-            ng-disabled="!(basic.modelTitle && basic.modelTitle.length > 0)"
-            ng-click="basic.cancelEditTitle()">
-            Cancel
-          </button>
+        <div class="panel-body">
+          <div class="row">
+            <div
+              ng-if="basic.modelSubject && !basic.editingSubject"
+              class="col-xs-8">
+              <h4>
+                <a
+                  target="_blank"
+                  href="http://monarchinitiative.org/resolve/{{basic.modelSubject}}">
+                  {{basic.modelSubjectLabel}}
+                </a>
+              </h4>
+            </div>
+            <div
+              ng-hide="basic.modelSubject && !basic.editingSubject">
+              <div
+                class="col-xs-8">
+                <select
+                  class="form-control"
+                  id="select_subject_default"
+                  placeholder="Pick a Disease...">
+                </select>
+              </div>
+              <div
+                ng-if="basic.editingSubject"
+                class="col-xs-2">
+                <button
+                  type="button"
+                  class="btn btn-warning btn-sm"
+                  ng-disabled="!(basic.modelSubject)"
+                  ng-click="basic.cancelEditSubject()">
+                  Cancel
+                </button>
+              </div>
+              <div
+                class="col-xs-2">
+                <button
+                  ng-disabled="!(basic.newSubject)"
+                  type="button" class="btn btn-success btn-sm" ng-click="basic.saveEditedSubject()">
+                  Set Disease
+                </button>
+              </div>
+            </div>
+
+            <div
+              ng-if="basic.user_token && !basic.editingSubject && basic.modelSubject"
+              class="col-xs-2">
+              <button
+                type="button" class="btn btn-primary btn-sm" ng-click="basic.editSubject()">
+                Choose Disease…
+              </button>
+            </div>
+          </div>
+
+          <div
+            ng-if="basic.modelSubject"
+            class="row">
+            <div
+              ng-if="!basic.editingTitle"
+              class="col-xs-8">
+              <h4>
+                {{basic.modelTitle}}
+              </h4>
+            </div>
+            <div
+              ng-if="basic.editingTitle">
+              <div
+                class="col-xs-8">
+                <input
+                  autofocus
+                  ng-model="basic.newTitle"
+                  type="text"
+                  class="form-control"
+                  id="modelTitle"
+                  placeholder="Title your model">
+              </div>
+              <div
+                class="col-xs-2">
+                <button
+                  type="button"
+                  class="btn btn-warning btn-sm"
+                  ng-disabled="!(basic.modelTitle && basic.modelTitle.length > 0)"
+                  ng-click="basic.cancelEditTitle()">
+                  Cancel
+                </button>
+              </div>
+              <div
+                class="col-xs-2">
+                <button
+                  ng-disabled="!(basic.newTitle && basic.newTitle.length > 0)"
+                  type="button" class="btn btn-success btn-sm" ng-click="basic.saveEditedTitle()">
+                  Set Title
+                </button>
+              </div>
+            </div>
+
+            <div
+              ng-if="basic.user_token && !basic.editingTitle"
+              class="col-xs-2">
+              <button
+                type="button" class="btn btn-primary btn-sm" ng-click="basic.editTitle()">
+                Change Title
+              </button>
+            </div>
+          </div>
         </div>
-        <div
-          ng-hide="!basic.editingTitle"
-          class="col-xs-2">
-          <button
-            ng-disabled="!(basic.newTitle && basic.newTitle.length > 0)"
-            type="button" class="btn btn-success btn-sm" ng-click="basic.saveEditedTitle()">
-            Set Title
-          </button>
+
+        <div class="panel-footer">
+          <div
+            class="row"
+            ng-if="basic.modelSubject">
+            <div
+              ng-if="basic.user_token">
+              <div class="col-xs-3">
+                <button
+                  ng-disabled="!basic.isValidModel() || basic.editingTitle || basic.editingSubject"
+                  id="save_button"
+                  type="button"
+                  class="btn btn-success btn-sm"
+                  ng-click="basic.store()">
+                  Save Model
+                </button>
+              </div>
+              <div class="col-xs-3">
+                <button ng-disabled="true" id="delete_button" type="button" class="btn btn-warning btn-sm" ng-click="basic.delete()">
+                  <s>Delete Model</s>
+                </button>
+              </div>
+            </div>
+
+            <div class="col-xs-3">
+              <a
+                ng-disabled="!basic.isValidModel() || basic.editingTitle || basic.editingSubject"
+                type="button" class="btn btn-primary btn-sm"
+                href="{{basic.edit_graph_url}}">
+                View Graph
+              </a>
+            </div>
+            <div class="col-xs-3">
+              <a
+                ng-disabled="!basic.isValidModel() || basic.editingTitle || basic.editingSubject"
+                type="button" class="btn btn-primary btn-sm"
+                href="{{basic.export_owl_url}}"
+                target="_blank">
+                Export OWL
+              </a>
+            </div>
+          </div>
         </div>
+      </div>
+
+
+      <div ng-if="false" class="row well well-sm">
         <div
-          ng-hide="basic.editingTitle"
+          ng-if="!basic.editingTitle"
           class="col-xs-8">
           <h4>
             {{basic.modelTitle}}
           </h4>
         </div>
-
-        <%#barista_token%>
         <div
-          ng-hide="basic.editingTitle"
-          class="col-xs-1">
-          &nbsp;
+          ng-if="basic.editingTitle">
+          <div
+            class="col-xs-8">
+            <input
+              autofocus
+              ng-model="basic.newTitle"
+              type="text"
+              class="form-control"
+              id="modelTitle"
+              placeholder="Title your model">
+          </div>
+          <div
+            class="col-xs-2">
+            <button
+              type="button"
+              class="btn btn-warning btn-sm"
+              ng-disabled="!(basic.modelTitle && basic.modelTitle.length > 0)"
+              ng-click="basic.cancelEditTitle()">
+              Cancel
+            </button>
+          </div>
+          <div
+            class="col-xs-2">
+            <button
+              ng-disabled="!(basic.newTitle && basic.newTitle.length > 0)"
+              type="button" class="btn btn-success btn-sm" ng-click="basic.saveEditedTitle()">
+              Set Title
+            </button>
+          </div>
         </div>
+
         <div
-          ng-hide="basic.editingTitle"
+          ng-if="basic.user_token && !basic.editingTitle"
           class="col-xs-2">
           <button
             type="button" class="btn btn-primary btn-sm" ng-click="basic.editTitle()">
             Change Title
           </button>
         </div>
-        <%/barista_token%>
+      </div>
+
+      <div ng-if="false" class="row well well-sm">
+        <div
+          ng-if="!basic.editingSubject"
+          class="col-xs-8">
+          <h4>
+            {{basic.modelTitle}}
+          </h4>
+        </div>
+        <div
+          ng-if="basic.editingSubject">
+          <div
+            class="col-xs-8">
+            <input
+              autofocus
+              ng-model="basic.newSubject"
+              type="text"
+              class="form-control"
+              id="modelSubject"
+              placeholder="Select a Subject">
+          </div>
+          <div
+            class="col-xs-2">
+            <button
+              type="button"
+              class="btn btn-warning btn-sm"
+              ng-disabled="!(basic.modelSubject && basic.modelSubject.length > 0)"
+              ng-click="basic.cancelEditSubject()">
+              Cancel
+            </button>
+          </div>
+          <div
+            class="col-xs-2">
+            <button
+              ng-disabled="!(basic.newSubject && basic.newSubject.length > 0)"
+              type="button" class="btn btn-success btn-sm" ng-click="basic.saveEditedSubject()">
+              Set Subject
+            </button>
+          </div>
+        </div>
+
+        <div
+          ng-if="basic.user_token && !basic.editingSubject"
+          class="col-xs-2">
+          <button
+            type="button" class="btn btn-primary btn-sm" ng-click="basic.editSubject()">
+            Change Subject
+          </button>
+        </div>
       </div>
 
       <div
+        ng-if="false"
         class="row well well-sm">
-      <%#barista_token%>
-        <div class="col-xs-3">
-          <button
-            ng-disabled="!basic.isValidModel()"
-            id="save_button"
-            type="button"
-            class="btn btn-success btn-sm"
-            ng-click="basic.store()">
-            Save Model
-          </button>
+        <div
+          ng-if="basic.user_token">
+          <div class="col-xs-3">
+            <button
+              ng-disabled="!basic.isValidModel()"
+              id="save_button"
+              type="button"
+              class="btn btn-success btn-sm"
+              ng-click="basic.store()">
+              Save Model
+            </button>
+          </div>
+          <div class="col-xs-3">
+            <button ng-disabled="true" id="delete_button" type="button" class="btn btn-warning btn-sm" ng-click="basic.delete()">
+              <s>Delete Model</s>
+            </button>
+          </div>
         </div>
-        <div class="col-xs-3">
-          <button ng-disabled="true" id="delete_button" type="button" class="btn btn-warning btn-sm" ng-click="basic.delete()">
-            <s>Delete Model</s>
-          </button>
-        </div>
-      <%/barista_token%>
+
         <div class="col-xs-3">
           <a
             type="button" class="btn btn-primary btn-sm"
@@ -168,288 +386,290 @@
       </div>
 
 
-      <div class="row">
-        <h5 class="text-center">Annotations</h5>
-      </div>
-
-
-      <script type="text/ng-template" id="uiSelect">
-        <ui-select-wrap>
-          <ui-select
-            search-enabled="false"
-            ng-model="MODEL_COL_FIELD"
-            theme="selectize"
-            ng-disabled="disabled"
-            reset-search-input="true"
-            append-to-body="false">
-            <ui-select-match placeholder="Choose...">
-              {{COL_FIELD}}
-            </ui-select-match>
-            <ui-select-choices repeat="item in col.colDef.editDropdownOptionsArray | filter: $select.search">
-              <div ng-bind-html="item.label | highlight: $select.search"></div>
-              <small ng-bind-html="col.colDef.editDropdownOptionsArray.length"></small>
-            </ui-select-choices>
-          </ui-select>
-        </ui-select-wrap>
-      </script>
-
-<!--
-        <div style="background:lightyellow;position:fixed !important;z-index:1000;top:0;right:50px;width:300px;height:200px;padding:10px;">
-          <pre>modelcol: MODEL_COL_FIELD</pre>
-          <pre>col: COL_FIELD</pre>
-          <pre>*modelcol: {{MODEL_COL_FIELD}}</pre>
-          <pre>*col: {{COL_FIELD}}</pre>
+      <div ng-if="basic.modelSubject">
+        <div class="row">
+          <h5 class="text-center">Annotations</h5>
         </div>
--->
 
 
-      <div
-        ng-if="basic.USE_UI_GRID"
-        class="row">
+        <script type="text/ng-template" id="uiSelect">
+          <div
+            ng-if="false"
+            style="background:lightyellow;position:fixed !important;z-index:1000;top:0;right:50px;width:300px;height:200px;padding:10px;">
+            <pre>modelcol: MODEL_COL_FIELD</pre>
+            <pre>col: COL_FIELD</pre>
+            <pre>*modelcol: {{MODEL_COL_FIELD}}</pre>
+            <pre>*col: {{COL_FIELD}}</pre>
+          </div>
+          <ui-select-wrap>
+            <ui-select
+              search-enabled="true"
+              ng-model="MODEL_COL_FIELD"
+              theme="selectize"
+              ng-disabled="disabled"
+              reset-search-input="true"
+              append-to-body="false">
+              <ui-select-match placeholder="Choose...">
+                {{COL_FIELD.label}}
+              </ui-select-match>
+              <ui-select-choices repeat="item in col.colDef.editDropdownOptionsArray | filter: $select.search">
+                <div ng-bind-html="item.label | highlight: $select.search"></div>
+                <small ng-bind-html="col.colDef.editDropdownOptionsArray.length"></small>
+              </ui-select-choices>
+            </ui-select>
+          </ui-select-wrap>
+        </script>
+
+
+
         <div
-          id="grid1"
-          ui-grid="basic.gridOptions"
-          ui-grid-edit ui-grid-row-edit ui-grid-cellNav
-          ui-grid-resize-columns ui-grid-auto-resize
-          class="col-xs-12 grid">
+          ng-if="basic.USE_UI_GRID"
+          class="row">
+          <div
+            id="grid1"
+            ui-grid="basic.gridOptions"
+            ui-grid-edit ui-grid-row-edit ui-grid-cellNav
+            ui-grid-resize-columns ui-grid-auto-resize
+            class="col-xs-12 grid">
+          </div>
         </div>
-      </div>
 
-      <div
-        class="row">
+        <div
+          class="row">
 
-        <table
-          class="col-xs-12 table table-bordered association-table">
+          <table
+            class="col-xs-12 table table-bordered association-table">
 
-          <thead>
-            <tr>
-              <th colspan="3">Disease</th>
-              <th colspan="3">Phenotype</th>
-              <th colspan="3">Age of Onset</th>
-              <th colspan="3">Description</th>
-              <th colspan="8">Evidence</th>
-              <th>&nbsp;</th>
-            </tr>
-          </thead>
+            <thead>
+              <tr>
+                <th colspan="3">Disease</th>
+                <th colspan="3">Phenotype</th>
+                <th colspan="3">Age of Onset</th>
+                <th colspan="3">Description</th>
+                <th colspan="8">Evidence</th>
+                <th
+                  ng-if="basic.user_token">
+                  &nbsp;
+                </th>
+              </tr>
+            </thead>
 
-          <tbody>
-            <tr ng-repeat="entry in basic.grid_model track by $index">
-              <td colspan="3"
-                ng-hide="basic.editing_row !== entry">
-                <div class="row">
-                  <div class="col-xs-12">
-                    <select
-                      class="form-control"
-                      id="select_disease_{{$index}}"
-                      placeholder="Pick a Disease...">
-                    </select>
-                  </div>
-                </div>
-              </td>
-              <td colspan="3"
-                ng-hide="basic.editing_row === entry">
-                <a
-                  target="_blank"
-                  href="http://monarchinitiative.org/resolve/{{entry.disease_id}}">
-                    {{entry.disease}}
-                </a>
-              </td>
-
-              <td colspan="3"
-                ng-hide="basic.editing_row !== entry">
-                <div class="row">
-                  <div class="col-xs-12">
-                    <select
-                      class="form-control"
-                      id="select_phenotype_{{$index}}"
-                      placeholder="Pick a Phenotype...">
-                    </select>
-                  </div>
-                </div>
-              </td>
-              <td colspan="3"
-                ng-hide="basic.editing_row === entry">
-                <a
-                  target="_blank"
-                  href="http://monarchinitiative.org/resolve/{{entry.phenotype_id}}">
-                    {{entry.phenotype}}
-                </a>
-              </td>
-
-              <td colspan="3"
-                ng-hide="basic.editing_row !== entry">
-                <div class="row">
-                  <div class="col-xs-12">
-                    <select
-                      class="form-control"
-                      id="select_ageofonset_{{$index}}"
-                      placeholder="Pick an Age of Onset...">
-                    </select>
-                  </div>
-                </div>
-              </td>
-              <td colspan="3"
-                ng-hide="basic.editing_row === entry">
-                <a
-                  target="_blank"
-                  href="http://monarchinitiative.org/resolve/{{entry.ageofonset_id}}">
-                    {{entry.ageofonset}}
-                </a>
-              </td>
-
-
-              <td colspan="3"
-                ng-hide="basic.editing_row !== entry">
-                <textarea
-                  class="form-control"
-                  rows="2"
-                  ng-model="basic.selected_description">
-                </textarea>
-              </td>
-
-              <td colspan="3"
-                ng-hide="basic.editing_row === entry">
-                {{entry.description}}
-              </td>
-
-              <td colspan="8"
-                ng-class="basic.editing_row === entry ? 'evidence-row-editing' : 'evidence-row'">
-                <div
+            <tbody>
+              <tr ng-repeat="entry in basic.grid_model track by $index">
+                <td colspan="3"
                   ng-hide="basic.editing_row !== entry">
-
-                  <div
-                    ng-repeat="ev_ref in entry.evidence_metadata track by $index">
-                    <div class="row">
-                      <div class="col-xs-11">
-                        <select
-                          class="form-control"
-                          id="{{ev_ref.htmlid}}_{{$parent.$index}}_{{$index}}"
-                          placeholder="Select evidence..." ng-model="ev_ref.ev">
-                        </select>
-                      </div>
-                      <button
-                        ng-hide="!$first"
-                        class="xcol-xs-1 btn btn-secondary btn-xs"
-                        style="margin:0;margin-left:-10px;"
-                        ng-click="basic.add_ev(basic.selected_ev_ref_list, $parent.$index)">
-                        <i class="glyphicon glyphicon-plus"></i>
-                      </button>
+                  <div class="row">
+                    <div class="col-xs-12">
+                      <select
+                        class="form-control"
+                        id="select_disease_{{$index}}"
+                        placeholder="Pick a Disease...">
+                      </select>
                     </div>
+                  </div>
+                </td>
+                <td colspan="3"
+                  ng-if="basic.editing_row !== entry">
+                  <a
+                    target="_blank"
+                    href="http://monarchinitiative.org/resolve/{{entry.disease_id}}">
+                      {{entry.disease}}
+                  </a>
+                </td>
+
+                <td colspan="3"
+                  ng-hide="basic.editing_row !== entry">
+                  <div class="row">
+                    <div class="col-xs-12">
+                      <select
+                        class="form-control"
+                        id="select_phenotype_{{$index}}"
+                        placeholder="Pick a Phenotype...">
+                      </select>
+                    </div>
+                  </div>
+                </td>
+                <td colspan="3"
+                  ng-if="basic.editing_row !== entry">
+                  <a
+                    target="_blank"
+                    href="http://monarchinitiative.org/resolve/{{entry.phenotype_id}}">
+                      {{entry.phenotype}}
+                  </a>
+                </td>
+
+                <td colspan="3"
+                  ng-hide="basic.editing_row !== entry">
+                  <div class="row">
+                    <div class="col-xs-12">
+                      <select
+                        class="form-control"
+                        id="select_ageofonset_{{$index}}"
+                        placeholder="Pick an Age of Onset...">
+                      </select>
+                    </div>
+                  </div>
+                </td>
+                <td colspan="3"
+                  ng-if="basic.editing_row !== entry">
+                  <a
+                    target="_blank"
+                    href="http://monarchinitiative.org/resolve/{{entry.ageofonset_id}}">
+                      {{entry.ageofonset}}
+                  </a>
+                </td>
+
+
+                <td colspan="3"
+                  ng-if="basic.editing_row === entry">
+                  <textarea
+                    class="form-control"
+                    rows="2"
+                    ng-model="basic.selected_description">
+                  </textarea>
+                </td>
+
+                <td colspan="3"
+                  ng-if="basic.editing_row !== entry">
+                  {{entry.description}}
+                </td>
+
+                <td colspan="8"
+                  ng-class="basic.editing_row === entry ? 'evidence-row-editing' : 'evidence-row'">
+                  <div
+                    ng-if="basic.editing_row === entry">
 
                     <div
-                      ng-repeat="ref in ev_ref.ref_list">
-                      <div
-                        class="row"
-                        style="padding:0;">
-                        <label
-                          class="col-xs-2"
-                          style="font-size:0.9em;font-weight:400;color:#555;margin:2px -20px 2px 20px;padding:0;"
-                          for="{{ev_ref.htmlid + ref.htmlid}}_{{$parent.$index}}_{{$index}}">
-                          Ref
-                        </label>
-                        <div class="col-xs-9">
-                          <input
+                      ng-repeat="ev_ref in entry.evidence_metadata track by $index">
+                      <div class="row">
+                        <div class="col-xs-11">
+                          <select
                             class="form-control"
-                            style="font-size:0.9em;font-weight:400;color:#555;"
-                            type="text"
-                            id="{{ev_ref.htmlid + ref.htmlid}}_{{$parent.$index}}_{{$index}}"
-                            placeholder="Enter supporting reference (e.g., PMID:1234)"
-                            ng-model="ref.ref">
-                          </input>
+                            id="{{ev_ref.htmlid}}_{{$parent.$index}}_{{$index}}"
+                            placeholder="Select evidence..." ng-model="ev_ref.ev">
+                          </select>
                         </div>
                         <button
-                          type="submit"
-                          ng-hide="!$first"
+                          ng-if="$first"
                           class="xcol-xs-1 btn btn-secondary btn-xs"
                           style="margin:0;margin-left:-10px;"
-                          ng-click="basic.add_ref(ev_ref)">
+                          ng-click="basic.add_ev(basic.selected_ev_ref_list, $parent.$index)">
                           <i class="glyphicon glyphicon-plus"></i>
                         </button>
                       </div>
+
+                      <div
+                        ng-repeat="ref in ev_ref.ref_list">
+                        <div
+                          class="row"
+                          style="padding:0;">
+                          <label
+                            class="col-xs-2"
+                            style="font-size:0.9em;font-weight:400;color:#555;margin:2px -20px 2px 20px;padding:0;"
+                            for="{{ev_ref.htmlid + ref.htmlid}}_{{$parent.$index}}_{{$index}}">
+                            Ref
+                          </label>
+                          <div class="col-xs-9">
+                            <input
+                              class="form-control"
+                              style="font-size:0.9em;font-weight:400;color:#555;"
+                              type="text"
+                              id="{{ev_ref.htmlid + ref.htmlid}}_{{$parent.$index}}_{{$index}}"
+                              placeholder="Enter supporting reference (e.g., PMID:1234)"
+                              ng-model="ref.ref">
+                            </input>
+                          </div>
+                          <button
+                            type="submit"
+                            ng-if="$first"
+                            class="xcol-xs-1 btn btn-secondary btn-xs"
+                            style="margin:0;margin-left:-10px;"
+                            ng-click="basic.add_ref(ev_ref)">
+                            <i class="glyphicon glyphicon-plus"></i>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div
-                  ng-hide="basic.editing_row === entry">
                   <div
-                    ng-repeat="ev_ref in entry.evidence_metadata track by $index">
-                    <a
-                      target="_blank"
-                      href="http://purl.obolibrary.org/obo/{{basic.convertECOId(ev_ref.id)}}">
-                      {{ev_ref.label}}
-                    </a>
-
+                    ng-if="basic.editing_row !== entry">
                     <div
-                      ng-repeat="ref in ev_ref.ref_list">
-                      &nbsp;&nbsp;&nbsp;&nbsp;{{ref.ref}}
+                      ng-repeat="ev_ref in entry.evidence_metadata track by $index">
+                      <a
+                        target="_blank"
+                        href="http://purl.obolibrary.org/obo/{{basic.convertECOId(ev_ref.id)}}">
+                        {{ev_ref.label}}
+                      </a>
+
+                      <div
+                        ng-repeat="ref in ev_ref.ref_list">
+                        &nbsp;&nbsp;&nbsp;&nbsp;{{ref.ref}}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </td>
+                </td>
 
-        <%#barista_token%>
-              <td
-                ng-hide="basic.editing_row === entry"
-                class="action-row">
-                  <button
-                    type="button"
-                    title="Edit"
-                    class="btn btn-primary btn-xs"
-                    ng-disabled="basic.editing_row"
-                    ng-click="basic.editRow(entry, $index, false)">
-                    <i class="glyphicon glyphicon-pencil"></i>
+                <td
+                  ng-if="basic.user_token && basic.editing_row !== entry"
+                  class="action-row">
+                    <button
+                      type="button"
+                      title="Edit"
+                      class="btn btn-primary btn-xs"
+                      ng-disabled="basic.editing_row"
+                      ng-click="basic.editRow(entry, $index, false)">
+                      <i class="glyphicon glyphicon-pencil"></i>
+                    </button>
+                    <button
+                      ng-disabled="basic.editing_row"
+                      type="button"
+                      title="Duplicate"
+                      class="btn btn-primary btn-xs" ng-click="basic.duplicateRow(entry, $index)">
+                      <i class="glyphicon glyphicon-duplicate"></i>
+                    </button>
+                    <button
+                      type="button"
+                      title="Delete"
+                      ng-disabled="basic.editing_row"
+                      class="btn btn-warning btn-xs"
+                      ng-click="basic.deleteRow(entry.disease_node_id, entry.phenotype_node_id, entry.ageofonset_node_id)">
+                      <i class="glyphicon glyphicon-trash"></i>
+                    </button>
+                </td>
+
+                <td
+                  ng-if="basic.user_token && basic.editing_row === entry"
+                  class="action-row">
+                  <button type="button" class="btn btn-success btn-xs"
+                    ng-disabled="!basic.isValidAssociation()"
+                    ng-click="basic.saveEditedRow()">
+                    <i class="glyphicon glyphicon-save"></i>
                   </button>
-                  <button
-                    ng-disabled="basic.editing_row"
-                    type="button"
-                    title="Duplicate"
-                    class="btn btn-primary btn-xs" ng-click="basic.duplicateRow(entry, $index)">
-                    <i class="glyphicon glyphicon-duplicate"></i>
+                  <button type="button" class="btn btn-warning btn-xs"
+                    ng-click="basic.cancelEditRow($index)">
+                    <i class="glyphicon glyphicon-ban-circle"></i>
                   </button>
-                  <button
-                    type="button"
-                    title="Delete"
-                    ng-disabled="basic.editing_row"
-                    class="btn btn-warning btn-xs"
-                    ng-click="basic.deleteRow(entry.disease_node_id, entry.phenotype_node_id, entry.ageofonset_node_id)">
-                    <i class="glyphicon glyphicon-trash"></i>
-                  </button>
-              </td>
+                  &nbsp;
+                </td>
 
-              <td
-                ng-hide="basic.editing_row !== entry"
-                class="action-row">
-                <button type="button" class="btn btn-success btn-xs"
-                  ng-disabled="!basic.isValidAssociation()"
-                  ng-click="basic.saveEditedRow()">
-                  <i class="glyphicon glyphicon-save"></i>
-                </button>
-                <button type="button" class="btn btn-warning btn-xs"
-                  ng-click="basic.cancelEditRow($index)">
-                  <i class="glyphicon glyphicon-ban-circle"></i>
-                </button>
-                &nbsp;
-              </td>
-        <%/barista_token%>
+              </tr>
+            </tbody>
+          </table>
 
-
-
-            </tr>
-          </tbody>
-        </table>
-
-        <div style="margin:10px;">
-          <%#barista_token%>
-          <button
-            ng-disabled="basic.editing_row"
-            type="button"
-            class="btn btn-primary btn-sm btn-block"
-            ng-click="basic.addRow()">
-            Add New Annotation
-          </button>
-          <%/barista_token%>
+          <div
+            ng-if="basic.user_token"
+            style="margin:10px;">
+            <button
+              ng-disabled="basic.editing_row"
+              type="button"
+              class="btn btn-primary btn-sm btn-block"
+              ng-click="basic.addRow()">
+              Add New Annotation
+            </button>
+          </div>
         </div>
-    </div> <!-- ng-hide -->
+      </div>
 
   </div>
 </div>
+

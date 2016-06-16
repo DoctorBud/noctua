@@ -1,49 +1,9 @@
 #noctua-app div.selectize-control div.selectize-input {
   font-size:0.9em;
   line-height:1em;
-}
-
-#noctua-app #grid1.grid {
   width:100%;
 }
 
-
-#noctua-app #grid1 .ui-grid-cell {
-  overflow: visible;
-  z-index: 99999;
-}
-
-#noctua-app #grid1 .ui-grid-cell, ui-select-wrap {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-/*
-
-#noctua-app .select2 > .select2-choice.ui-select-match {
-      height: 29px;
-    }
-
-*/
-
-#noctua-app .selectize-control > .selectize-dropdown {
-      top: 36px;
-    }
-
-/* Some additional styling to demonstrate that append-to-body helps achieve the proper z-index layering. */
-/*
-#noctua-app .select-box {
-  background: #fff;
-  position: relative;
-  z-index: 1;
-}
-*/
-
-/*
 
 #noctua-app div.selectize-control div.selectize-input::after {
   content: ' ';
@@ -59,8 +19,8 @@
   margin:0;
   padding:0;
   font-size:0.9em;
+  width:100%;
 }
-*/
 
 #noctua-app div.feedback_label {
   position:absolute;
@@ -68,11 +28,46 @@
   background:lightyellow;
   display:none;
   padding:2px;
-  top:-20px;
+  top:-30px;
   z-index:3333;
   left:15px;
   right:15px;
 }
+
+
+
+/* ui-grid/ui-select support
+*/
+
+#noctua-app #grid1.grid {
+  width:100%;
+}
+#noctua-app #grid1 .ui-grid-cell {
+  overflow: visible;
+  z-index: 99999;
+}
+#noctua-app #grid1 .ui-grid-cell, ui-select-wrap {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+#noctua-app .selectize-control > .selectize-dropdown {
+      top: 36px;
+    }
+
+/* Some additional styling to demonstrate that append-to-body helps achieve the proper z-index layering. */
+/*
+#noctua-app .select-box {
+  background: #fff;
+  position: relative;
+  z-index: 1;
+}
+*/
+
+
 
 .md-toast.error {
     background-color: red;
