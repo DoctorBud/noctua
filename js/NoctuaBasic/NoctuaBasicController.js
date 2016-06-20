@@ -1113,7 +1113,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
         queryData: function(query) {
           //return 'isa_partof_closure_label_searchable:disease AND id:*' + query.replace(':', '\\:').toUpperCase() + '*';
           // return 'isa_partof_closure_label_searchable:disease AND annotation_class_label_searchable:*' + query + '*';
-          return 'isa_partof_closure_label_searchable:disease AND id:OMIM* AND annotation_class_label_searchable:*' + query + '*';
+          return 'isa_partof_closure_label_searchable:disease AND id:OMIM\\:* AND annotation_class_label_searchable:*' + query + '*';
         },
         golrManager: golr_manager_for_disease
       }
@@ -1142,7 +1142,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
         queryData: function(query) {
           //return 'isa_partof_closure_label_searchable:phenotype AND id:*' + query.replace(':', '\\:').toUpperCase() + '*';
           // return 'isa_partof_closure_label_searchable:phenotype AND annotation_class_label_searchable:*' + query + '*';
-          return 'isa_partof_closure_label_searchable:phenotype AND id:HP* AND annotation_class_label_searchable:*' + query + '*';
+          return 'isa_partof_closure_label_searchable:phenotype AND id:HP\\:* AND annotation_class_label_searchable:*' + query + '*';
         },
         golrManager: golr_manager_for_phenotype
       }
