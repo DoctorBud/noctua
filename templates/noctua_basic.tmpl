@@ -71,6 +71,8 @@
               &nbsp;&nbsp;
             </a>
           </span>
+
+          &nbsp;
         </div>
 
       </div>
@@ -98,7 +100,15 @@
           <div class="row">
             <div
               ng-if="basic.modelSubject && !basic.editingSubject"
-              class="col-xs-8">
+              class="col-xs-2">
+              <h4>
+                Disease:
+              </h4>
+            </div>
+
+            <div
+              ng-if="basic.modelSubject && !basic.editingSubject"
+              class="col-xs-6">
               <h4>
                 <a
                   target="_blank"
@@ -112,6 +122,7 @@
               <div
                 class="col-xs-8">
                 <select
+                  autofocus
                   class="form-control"
                   id="select_subject_default"
                   placeholder="Pick a Disease...">
@@ -139,7 +150,7 @@
             </div>
 
             <div
-              ng-if="basic.user_token && !basic.editingSubject && basic.modelSubject"
+              ng-if="false && basic.user_token && !basic.editingSubject && basic.modelSubject"
               class="col-xs-2">
               <button
                 type="button" class="btn btn-primary btn-sm" ng-click="basic.editSubject()">
@@ -153,7 +164,14 @@
             class="row">
             <div
               ng-if="!basic.editingTitle"
-              class="col-xs-8">
+              class="col-xs-2">
+              <h4>
+                Title:
+              </h4>
+            </div>
+            <div
+              ng-if="!basic.editingTitle"
+              class="col-xs-6">
               <h4>
                 {{basic.modelTitle}}
               </h4>
@@ -209,7 +227,7 @@
               ng-if="basic.user_token">
               <div class="col-xs-3">
                 <button
-                  ng-disabled="!basic.isValidModel() || basic.editingTitle || basic.editingSubject"
+                  xng-disabled="!basic.isValidModel() || basic.editingTitle || basic.editingSubject"
                   id="save_button"
                   type="button"
                   class="btn btn-success btn-sm"

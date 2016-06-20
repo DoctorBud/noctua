@@ -51,7 +51,7 @@ app.config(['toastrConfig', function(toastrConfig) {
   });
 }]);
 
-// app.directive('autofocus', function($timeout) {
+// app.directive('autofocus', ['$timeout', function($timeout) {
 //   return {
 //     restrict: 'AC',
 //     link: function(scope, _element) {
@@ -61,7 +61,7 @@ app.config(['toastrConfig', function(toastrConfig) {
 //       }, 0);
 //     }
 //   };
-// });
+// }]);
 
 
 require('./NoctuaBasicController.js');

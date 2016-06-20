@@ -65,6 +65,7 @@ jQuery.widget('widget.solrautocomplete', {
         if (!query.length) return callback();
 
         var customCallBack = function(res) {
+          console.log('customCallBack:', res._raw.response.docs);
           _updateHits(res._raw.response.numFound);
           callback(res._raw.response.docs);
         };
@@ -90,6 +91,7 @@ jQuery.widget('widget.solrautocomplete', {
         // });
       },
       onChange: function(value) {
+        console.log('onChange:', value);
         widgetOnChange(value);
         _checkSanity(value);
         _currentValue = value;
@@ -268,6 +270,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
   this.editingSubject = false;
   this.modelSubject = null;
   this.modelSubjectLabel = null;
+  this.modelSubjectNodeId = null;
 
   this.newSubject = null;
 
@@ -391,6 +394,8 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       "id": that.newSubject,
       "annotation_class_label_searchable": that.modelSubjectLabel
     }]);
+
+    console.log('setValue:', that.newSubject);
     disease_selectize.setValue(that.newSubject);
 
     $timeout(function () {
@@ -404,8 +409,28 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
 
   this.saveEditedSubject = function() {
     console.log('saveEditedSubject', that.newSubject);
-    that.modelSubject = that.newSubject;
-    that.modelSubjectLabel = that.newSubject + ' (Label NYI)';
+    if (that.modelSubject !== that.newSubject) {
+      _shields_up();
+
+      var r = new minerva_requests.request_set(manager.user_token(), model_id)
+      r.remove_annotation_from_model('source', that.modelSubject);
+      r.add_annotation_to_model('source', that.newSubject);
+
+      var nodes = graph.get_nodes();
+
+      var existing_disease_id = getExistingIndividualId(that.modelSubject, nodes);
+      var subject_tmp_id = r.add_individual(that.newSubject);
+
+      that.modelSubject = that.newSubject;
+      that.modelSubjectLabel = that.newSubject + ' (Label NYI)';
+      that.modelSubjectNodeId = subject_tmp_id;
+      console.log('existing_disease_id', existing_disease_id);
+      console.log('that.modelSubject', that.modelSubject);
+      console.log('that.modelSubjectLabel', that.modelSubjectLabel);
+      console.log('that.modelSubjectNodeId', that.modelSubjectNodeId);
+      manager.request_with(r, "edit_subject");
+      _shields_down();
+    }
     that.editingSubject = false;
 
     if (!that.modelTitle) {
@@ -478,6 +503,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
 
   refresh_ui = function() {
     build_table();
+    that.refresh_subject();
     that.refresh_title();
     that.$timeout(function () {
       that.initializeSubjectAutocomplete();
@@ -487,8 +513,21 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     // }
   }
 
+  this.refresh_subject = function() {
+    var annotations = graph.get_annotations_by_key('source');
+    console.log('refresh_subject', annotations);
+    if (annotations.length == 0) {
+      // no subject set yet
+    } else {
+      var subject = annotations[0].value(); // there should be only one
+      that.modelSubject = subject;
+      that.modelSubjectNodeId = subject;
+      that.modelSubjectLabel = subject;
+    }
+  }
+
   this.refresh_title = function() {
-    annotations = graph.get_annotations_by_key("title");
+    var annotations = graph.get_annotations_by_key("title");
     console.log('refresh_title', annotations);
     if (annotations.length == 0) {
       // no title set yet
@@ -556,6 +595,12 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       "reference": null,
       "description": null
     };
+
+    row.disease = this.modelSubject;
+    row.disease_id = this.modelSubject;
+    row.disease_node_id = this.modelSubjectNodeId;
+    row.disease_label = this.modelSubjectLabel;
+
     that.grid_model.push(row);
     $timeout(function() {
       that.editRow(row, that.grid_model.length - 1, true);
@@ -592,6 +637,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       "id": row.disease_id,
       "annotation_class_label_searchable": row.disease_label
     }]);
+    console.log('setValue', row);
     disease_selectize.setValue(row.disease_id);
 
     var phenotype_selectize = jQuery('#select_phenotype_' + rowIndex)[0].selectize;
@@ -841,9 +887,10 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       that.gridOptions.data = [];
     }
 
+    var firstModelSubject = null;
+    var firstModelSubjectLabel = '';
+
     that.grid_model = [];
-    that.modelSubject = null;
-    that.modelSubjectLabel = '';
     var edges = graph.all_edges();
     var has_phenotype_edges = underscore.filter(edges, function(edge) {
       return edge._predicate_id === has_phenotype_relation;
@@ -945,7 +992,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
 
       that.grid_model.push(entry);
 
-      if (!that.modelSubject) {
+      if (!firstModelSubject) {
         that.modelSubject = entry.disease_id;
         that.modelSubjectLabel = build_joined_label(entry.disease_id, entry.disease_label);
       }
@@ -973,6 +1020,11 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
         that.gridOptions.data.push(gridEntry);
       }
     }
+
+    if (firstModelSubject) {
+      that.modelSubject = firstModelSubject;
+      that.modelSubjectLabel = firstModelSubjectLabel;
+    }
   }
 
   initializeCallbacks = function() {
@@ -994,7 +1046,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
 
     manager.register('rebuild', 'foorebuild', function(resp, man) {
       console.log("manager_rebuild");
-      console.log(resp);
+      console.log(resp.data());
       console.log(man);
 
       that.response_model = JSON.stringify(resp);
@@ -1011,7 +1063,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
 
     manager.register('merge', 'merdge', function(resp, man) {
       console.log("manager_merge");
-      console.log(resp);
+      console.log(resp.data());
       console.log(man);
 
       that.response_model = JSON.stringify(resp);
@@ -1060,7 +1112,8 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
         searchField: ['id', 'annotation_class_label_searchable'],
         queryData: function(query) {
           //return 'isa_partof_closure_label_searchable:disease AND id:*' + query.replace(':', '\\:').toUpperCase() + '*';
-          return 'isa_partof_closure_label_searchable:disease AND annotation_class_label_searchable:*' + query + '*';
+          // return 'isa_partof_closure_label_searchable:disease AND annotation_class_label_searchable:*' + query + '*';
+          return 'isa_partof_closure_label_searchable:disease AND id:OMIM* AND annotation_class_label_searchable:*' + query + '*';
         },
         golrManager: golr_manager_for_disease
       }
@@ -1088,7 +1141,8 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
         searchField: ['id', 'annotation_class_label_searchable'],
         queryData: function(query) {
           //return 'isa_partof_closure_label_searchable:phenotype AND id:*' + query.replace(':', '\\:').toUpperCase() + '*';
-          return 'isa_partof_closure_label_searchable:phenotype AND annotation_class_label_searchable:*' + query + '*';
+          // return 'isa_partof_closure_label_searchable:phenotype AND annotation_class_label_searchable:*' + query + '*';
+          return 'isa_partof_closure_label_searchable:phenotype AND id:HP* AND annotation_class_label_searchable:*' + query + '*';
         },
         golrManager: golr_manager_for_phenotype
       }
@@ -1153,16 +1207,19 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     var ssd = jQuery('#select_subject_default');
     var disease_selectize = ssd[0].selectize;
 
-    if (disease_selectize) {
-    }
-    else {
+    if (!disease_selectize) {
       Solrautocomplete.createSolrAutocompleteForElement(
         '#select_subject_default', that.disease_autocomplete_options(function(value) {
         $timeout(function() {
           that.newSubject = value;
         }, 10);
       }));
+      disease_selectize = ssd[0].selectize;
     }
+
+    $timeout(function() {
+      disease_selectize.focus();
+    }, 300);
   }
 
   this.initializeRowAutocomplete = function(rowIndex) {
