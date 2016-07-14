@@ -20,28 +20,21 @@
 
 
 #noctua-app div.selectize-control div.selectize-input.input-active {
-  min-width:250px;
+  min-width:300px;
   z-index:100;
 }
 
 
-#noctua-app div.selectize-control div.selectize-input input::-webkit-input-placeholder{
+#noctua-app div.selectize-control div.selectize-input input::-webkit-input-placeholder,
+#noctua-app div.selectize-control div.selectize-input input:-moz-placeholder,
+#noctua-app div.selectize-control div.selectize-input input::-moz-placeholder,
+#noctua-app div.selectize-control div.selectize-input input:-ms-input-placeholder {
     margin:0;
     padding:0;
     width:100%;
 }
-#noctua-app div.selectize-control div.selectize-input input:-moz-placeholder{
-   color: orange;
-}
-#noctua-app div.selectize-control div.selectize-input input::-webkit-input-placeholder{
-   color: orange;
-}
-#noctua-app div.selectize-control div.selectize-input input:-ms-input-placeholder {
-   color: orange;
-}
 
 #noctua-app div.selectize-control div.selectize-input input:placeholder-shown {
-   color: red;
 }
 
 #noctua-app div.selectize-control div.selectize-dropdown {

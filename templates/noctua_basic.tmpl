@@ -98,13 +98,13 @@
           ng-if="!basic.modelSubject"
           class="panel-heading">
           <h4 class="text-center">
-          Please choose a disease to annotate.
+          Choose a disease to annotate.
           </h4>
         </div>
         <div class="panel-body">
           <div class="row">
             <div
-              ng-if="basic.modelSubject && !basic.editingSubject"
+              ng-if="basic.modelSubject && !basic.editingSubject && !basic.modelTitle"
               class="col-xs-2">
               <h5>
                 Disease:
@@ -112,7 +112,7 @@
             </div>
 
             <div
-              ng-if="basic.modelSubject && !basic.editingSubject"
+              ng-if="basic.modelSubject && !basic.editingSubject && !basic.modelTitle"
               class="col-xs-6">
               <h5>
                 <a
@@ -126,7 +126,7 @@
             <div
               ng-hide="basic.modelSubject && !basic.editingSubject">
               <div
-                class="col-xs-8">
+                class="col-xs-9 col-sm-10">
                 <select
                   autofocus
                   class="form-control"
@@ -135,21 +135,10 @@
                 </select>
               </div>
               <div
-                ng-if="basic.editingSubject"
-                class="col-xs-2">
-                <button
-                  type="button"
-                  class="btn btn-warning btn-sm"
-                  ng-disabled="!(basic.modelSubject)"
-                  ng-click="basic.cancelEditSubject()">
-                  Cancel
-                </button>
-              </div>
-              <div
-                class="col-xs-2">
+                class="col-xs-3 col-sm-2">
                 <button
                   ng-disabled="!(basic.newSubject)"
-                  type="button" class="btn btn-default btn-sm" ng-click="basic.saveEditedSubject()">
+                  type="button" class="btn btn-primary btn-sm" ng-click="basic.saveEditedSubject()">
                   Set Disease
                 </button>
               </div>
@@ -159,57 +148,50 @@
           <div
             ng-if="basic.modelSubject"
             class="row">
-            <div
-              class="col-xs-2">
-              <h5>
-                Title:
-              </h5>
-            </div>
-            <div
-              ng-if="!basic.editingTitle"
-              class="col-xs-6">
-              <h5>
-                {{basic.modelTitle}}
-              </h5>
-            </div>
-            <div
-              ng-if="basic.editingTitle">
-              <div
-                class="col-xs-6">
-                <input
-                  autofocus
-                  ng-model="basic.newTitle"
-                  type="text"
-                  class="form-control"
-                  id="modelTitle"
-                  placeholder="Title your model">
-              </div>
-              <div
-                class="col-xs-2">
-                <button
-                  type="button"
-                  class="btn btn-warning btn-sm"
-                  ng-disabled="!(basic.modelTitle && basic.modelTitle.length > 0)"
-                  ng-click="basic.cancelEditTitle()">
-                  Cancel
-                </button>
-              </div>
-              <div
-                class="col-xs-2">
-                <button
-                  ng-disabled="!(basic.newTitle && basic.newTitle.length > 0)"
-                  type="button" class="btn btn-primary btn-sm" ng-click="basic.saveEditedTitle()">
-                  Set Title
-                </button>
-              </div>
+            <div class="col-xs-3">
+              Disease:&nbsp;
+              <a
+                target="_blank"
+                href="http://monarchinitiative.org/resolve/{{basic.modelSubject}}">
+                {{basic.modelSubjectLabel[0]}}&nbsp;
+                {{basic.modelSubjectLabel[0] === basic.modelSubjectLabel[1] ? '' : basic.modelSubjectLabel[1]}}
+              </a>
             </div>
 
             <div
-              ng-if="basic.user_token && !basic.editingTitle"
-              class="col-xs-2">
+              ng-if="!basic.editingTitle"
+              class="col-xs-9">
+              Title:&nbsp;
+              <i><b>{{basic.modelTitle}}</b></i>
               <button
-                type="button" class="btn btn-primary btn-sm" ng-click="basic.editTitle()">
+                type="button"
+                class="btn btn-primary btn-sm pull-right"
+                style="margin:-5px;"
+                ng-click="basic.editTitle()">
                 Change Title
+              </button>
+            </div>
+            <div
+              class="col-xs-9"
+              ng-if="basic.editingTitle">
+              <input
+                autofocus
+                ng-model="basic.newTitle"
+                type="text"
+                class="form-control"
+                id="modelTitle"
+                placeholder="Title your model">
+              <button
+                type="button"
+                class="btn btn-warning btn-sm pull-right"
+                ng-disabled="!(basic.modelTitle && basic.modelTitle.length > 0)"
+                ng-click="basic.cancelEditTitle()">
+                Cancel
+              </button>
+              <button
+                ng-disabled="!(basic.newTitle && basic.newTitle.length > 0)"
+                type="button" class="btn btn-primary btn-sm pull-right" ng-click="basic.saveEditedTitle()">
+                Set Title
               </button>
             </div>
           </div>

@@ -18,7 +18,6 @@ var USE_HP_RESTRICTION = false;
 
 function createSolrAutocompleteForElement(element, options) {
   var jqElement = jQuery(element);
-  console.log('Creating solr-autocomplete widget for ' + element);
   jqElement.solrautocomplete(options);
 }
 
@@ -71,7 +70,6 @@ jQuery.widget('widget.solrautocomplete', {
         if (!query.length) return callback();
 
         var customCallBack = function(res) {
-          console.log('customCallBack:', res._raw.response.docs);
           _updateHits(res._raw.response.numFound);
           callback(res._raw.response.docs);
         };
@@ -97,7 +95,6 @@ jQuery.widget('widget.solrautocomplete', {
         // });
       },
       onChange: function(value) {
-        console.log('onChange:', value);
         widgetOnChange(value);
         _checkSanity(value);
         _currentValue = value;
@@ -381,9 +378,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       r.add_annotation_to_model("title", that.newTitle);
       that.modelTitle = that.newTitle;
 
-      console.log('1saveEditedTitle', that.modelTitle);
       manager.request_with(r, "edit_title");
-      console.log('2saveEditedTitle', that.modelTitle);
       _shields_down();
     }
     that.editingTitle = false;
@@ -402,7 +397,6 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       "annotation_class_label_searchable": that.modelSubjectLabel
     }]);
 
-    console.log('setValue:', that.newSubject);
     disease_selectize.setValue(that.newSubject);
 
     $timeout(function () {
@@ -415,7 +409,6 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
   };
 
   this.saveEditedSubject = function() {
-    console.log('saveEditedSubject', that.newSubject);
     if (that.modelSubject !== that.newSubject) {
       _shields_up();
 
@@ -426,17 +419,11 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       var nodes = graph.get_nodes();
 
       var existing_disease_id = getExistingIndividualId(that.modelSubject, nodes);
-      console.log('existing_disease_id:', existing_disease_id);
       var subject_tmp_id = r.add_individual(that.newSubject);
-      console.log('subject_tmp_id:', subject_tmp_id);
 
       that.modelSubject = that.newSubject;
       that.modelSubjectLabel = [that.newSubject, ' (Label NYI)'];
       that.modelSubjectNodeId = subject_tmp_id;
-      console.log('existing_disease_id', existing_disease_id);
-      console.log('that.modelSubject', that.modelSubject);
-      console.log('that.modelSubjectLabel', that.modelSubjectLabel);
-      console.log('that.modelSubjectNodeId', that.modelSubjectNodeId);
       that.editingSubject = true;
       manager.request_with(r, "edit_subject");
       _shields_down();
@@ -514,8 +501,6 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
   }
 
   refresh_ui = function() {
-    console.log('refresh_ui', that.modelTitle);
-
     build_table();
     that.refresh_subject();
     that.refresh_title();
@@ -529,12 +514,10 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
 
   this.refresh_subject = function() {
     var annotations = graph.get_annotations_by_key(annotationSubjectKeyShorthand);
-    console.log('refresh_subject', annotations);
     if (annotations.length === 0) {
       // no subject set yet
     }
     else {
-      console.log('refresh_subject:', annotations);
       var subject = annotations[0].value(); // there should be only one
       that.modelSubject = subject;
       that.modelSubjectNodeId = subject;
@@ -544,7 +527,6 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
 
   this.refresh_title = function() {
     var annotations = graph.get_annotations_by_key("title");
-    console.log('refresh_title', annotations);
     if (annotations.length == 0) {
       // no title set yet
       that.editTitle(that.modelSubjectLabel);
@@ -653,7 +635,6 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       "id": row.disease_id,
       "annotation_class_label_searchable": row.disease_label
     }]);
-    console.log('setValue', row);
     disease_selectize.setValue(row.disease_id);
 
     var phenotype_selectize = jQuery('#select_phenotype_' + rowIndex)[0].selectize;
@@ -800,7 +781,6 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       ]);
     }
 
-    console.log('evidence_reference', evidence_reference);
     // Attach the metadata to the phenotype individual
     if (evidence_reference != "" && evidence_reference != null && evidence_reference.length != 0) {
       underscore.map(evidence_reference, function(ev_ref) {
@@ -1062,9 +1042,9 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
 
 
     manager.register('rebuild', 'foorebuild', function(resp, man) {
-      console.log("manager_rebuild");
-      console.log(resp.data());
-      console.log(man);
+      // console.log("manager_rebuild");
+      // console.log(resp.data());
+      // console.log(man);
 
       that.response_model = JSON.stringify(resp);
 
@@ -1079,7 +1059,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     }, 10);
 
     manager.register('merge', 'merdge', function(resp, man) {
-      console.log("manager_merge");
+      // console.log("manager_merge");
       var data = resp.data();
       // console.log(data);
 
@@ -1093,18 +1073,16 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
         var subjectId = individuals[0].type[0].id;
         var subjectLabel = individuals[0].type[0].label;
 
-        console.log('subjectId:', subjectId);
-        console.log('subjectLabel:', subjectLabel);
-        console.log('that.modelTitle:', that.modelTitle);
-        console.log('that.newTitle:', that.newTitle);
-        console.log('that.editingSubject:', that.editingSubject);
+        // console.log('subjectId:', subjectId);
+        // console.log('subjectLabel:', subjectLabel);
+        // console.log('that.modelTitle:', that.modelTitle);
+        // console.log('that.newTitle:', that.newTitle);
+        // console.log('that.editingSubject:', that.editingSubject);
         that.modelSubjectLabel = [subjectId, subjectLabel];
         that.editingSubject = false;
         that.newTitle = subjectId + ' - ' + subjectLabel;
         that.modelTitle = null;
-        console.log('1merge', that.newTitle);
         that.saveEditedTitle();
-        console.log('2merge', that.newTitle);
       }
       else {
         that.selected_disease = null;
