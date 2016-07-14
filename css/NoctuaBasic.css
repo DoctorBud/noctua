@@ -1,26 +1,60 @@
-#noctua-app div.selectize-control div.selectize-input {
-  font-size:0.9em;
-  line-height:1em;
+#noctua-app div.selectize-control {
+  xfont-size:1em;
+  xline-height:1em;
   width:100%;
+  padding:0;
+  margin:0;
 }
 
 
-#noctua-app div.selectize-control div.selectize-input::after {
-  content: ' ';
-  display: block;
-  clear: left;
-  position:absolute;
-  bottom:0;
-  right:2px;
+#noctua-app div.selectize-control div.selectize-input {
+  padding:1px;
+  margin:0;
 }
 
+
+#noctua-app div.selectize-control div.selectize-input:after {
+  top:5px;
+  right:0;
+}
+
+
+#noctua-app div.selectize-control div.selectize-input.input-active {
+  min-width:250px;
+  z-index:100;
+}
+
+
+#noctua-app div.selectize-control div.selectize-input input::-webkit-input-placeholder{
+    margin:0;
+    padding:0;
+    width:100%;
+}
+#noctua-app div.selectize-control div.selectize-input input:-moz-placeholder{
+   color: orange;
+}
+#noctua-app div.selectize-control div.selectize-input input::-webkit-input-placeholder{
+   color: orange;
+}
+#noctua-app div.selectize-control div.selectize-input input:-ms-input-placeholder {
+   color: orange;
+}
+
+#noctua-app div.selectize-control div.selectize-input input:placeholder-shown {
+   color: red;
+}
 
 #noctua-app div.selectize-control div.selectize-dropdown {
   margin:0;
   padding:0;
-  font-size:0.9em;
   width:100%;
 }
+
+#noctua-app div.selectize-control div.selectize-dropdown div.selectize-dropdown-content > * {
+  margin:1px;
+  padding:0;
+}
+
 
 #noctua-app div.feedback_label {
   position:absolute;

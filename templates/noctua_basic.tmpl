@@ -118,7 +118,8 @@
                 <a
                   target="_blank"
                   href="http://monarchinitiative.org/resolve/{{basic.modelSubject}}">
-                  {{basic.modelSubjectLabel}}
+                  {{basic.modelSubjectLabel[0]}}&nbsp;
+                  {{basic.modelSubjectLabel[0] === basic.modelSubjectLabel[1] ? '' : basic.modelSubjectLabel[1]}}
                 </a>
               </h5>
             </div>
@@ -148,7 +149,7 @@
                 class="col-xs-2">
                 <button
                   ng-disabled="!(basic.newSubject)"
-                  type="button" class="btn btn-success btn-sm" ng-click="basic.saveEditedSubject()">
+                  type="button" class="btn btn-default btn-sm" ng-click="basic.saveEditedSubject()">
                   Set Disease
                 </button>
               </div>
@@ -197,7 +198,7 @@
                 class="col-xs-2">
                 <button
                   ng-disabled="!(basic.newTitle && basic.newTitle.length > 0)"
-                  type="button" class="btn btn-success btn-sm" ng-click="basic.saveEditedTitle()">
+                  type="button" class="btn btn-primary btn-sm" ng-click="basic.saveEditedTitle()">
                   Set Title
                 </button>
               </div>
@@ -222,28 +223,30 @@
               ng-if="basic.user_token"
               class="text-center col-xs-3">
               <button
-                ng-disabled="!basic.isValidModel() || basic.editingTitle || basic.editingSubject"
-                id="save_button"
                 type="button"
-                class="btn btn-success btn-sm"
-                ng-click="basic.store()">
-                Save Model
-              </button>
-            </div>
-            <div
-              ng-if="basic.user_token"
-              class="text-center col-xs-3">
-              <button ng-disabled="true" id="delete_button" type="button" class="btn btn-warning btn-sm" ng-click="basic.delete()">
-                <s>Delete Model</s>
+                class="btn btn-primary btn-sm" ng-click="basic.addRow()">
+                Annotate
               </button>
             </div>
 
+            <div
+              ng-if="basic.user_token"
+              class="text-center col-xs-3">
+              <button
+                ng-disabled="!basic.isValidModel() || basic.editingTitle || basic.editingSubject"
+                id="save_button"
+                type="button"
+                class="btn btn-primary btn-sm"
+                ng-click="basic.store()">
+                Save
+              </button>
+            </div>
             <div class="text-center col-xs-3">
               <a
                 ng-disabled="!basic.isValidModel() || basic.editingTitle || basic.editingSubject"
                 type="button" class="btn btn-primary btn-sm"
                 href="{{basic.edit_graph_url}}">
-                View Graph
+                Graph
               </a>
             </div>
             <div class="text-center col-xs-3">
@@ -252,7 +255,7 @@
                 type="button" class="btn btn-primary btn-sm"
                 href="{{basic.export_owl_url}}"
                 target="_blank">
-                Export OWL
+                Export
               </a>
             </div>
           </div>
@@ -296,7 +299,8 @@
             ui-grid="basic.gridOptions"
             ui-grid-edit ui-grid-row-edit ui-grid-cellNav
             ui-grid-resize-columns ui-grid-auto-resize
-            class="col-xs-12 grid">
+            class="col-xs-12 grid"
+            style="height:200px;">
           </div>
         </div>
 
@@ -304,30 +308,19 @@
           class="row">
 
           <div
-            ng-if="basic.user_token">
-            <button
-              ng-disabled="basic.editing_row"
-              type="button"
-              class="btn btn-primary btn-sm btn-block"
-              ng-click="basic.addRow()">
-              Add New Annotation
-            </button>
-          </div>
-
-          <div
             class="col-xs-12"
             ng-if="basic.grid_model.length > 0">
             <table
+              style="min-width:800px;overflow-x:scroll;"
               class="table table-bordered association-table">
 
               <thead>
                 <tr>
-                  <th ng-if="false" colspan="3">Disease</th>
                   <th colspan="4">Phenotype</th>
                   <th colspan="4">Age of Onset</th>
-                  <th colspan="4">Description</th>
+                  <th colspan="4" style="width:190px;">Description</th>
                   <th colspan="8">Evidence</th>
-                  <th
+                  <th style="width:40px;"
                     ng-if="basic.user_token">
                     &nbsp;
                   </th>
@@ -335,7 +328,7 @@
               </thead>
 
               <tbody>
-                <tr ng-repeat="entry in basic.grid_model track by $index">
+                <tr ng-repeat="entry in basic.grid_model | orderBy:'index' track by $index">
                   <td ng-hide="true" colspan="3"
                     ng-hide="basic.editing_row !== entry">
                     <div class="row">
@@ -353,7 +346,8 @@
                     <a
                       target="_blank"
                       href="http://monarchinitiative.org/resolve/{{entry.disease_id}}">
-                        {{entry.disease}}
+                        {{entry.disease[0]}}<br>&nbsp;
+                        {{entry.disease[1]}}
                     </a>
                   </td>
 
@@ -374,7 +368,8 @@
                     <a
                       target="_blank"
                       href="http://monarchinitiative.org/resolve/{{entry.phenotype_id}}">
-                        {{entry.phenotype}}
+                        {{entry.phenotype[0]}}<br>&nbsp;
+                        {{entry.phenotype[1]}}
                     </a>
                   </td>
 
@@ -395,7 +390,8 @@
                     <a
                       target="_blank"
                       href="http://monarchinitiative.org/resolve/{{entry.ageofonset_id}}">
-                        {{entry.ageofonset}}
+                        {{entry.ageofonset[0]}}<br>&nbsp;
+                        {{entry.ageofonset[1]}}
                     </a>
                   </td>
 
@@ -477,7 +473,7 @@
                         <a
                           target="_blank"
                           href="http://purl.obolibrary.org/obo/{{basic.convertECOId(ev_ref.id)}}">
-                          {{ev_ref.label}}
+                          {{ev_ref.id}}<br>&nbsp;{{ev_ref.label}}
                         </a>
 
                         <div
@@ -494,7 +490,7 @@
                     <button
                       type="button"
                       title="Edit"
-                      class="btn btn-primary btn-xs"
+                      class="btn btn-primary btn-xs btn-block"
                       ng-disabled="basic.editing_row"
                       ng-click="basic.editRow(entry, $index, false)">
                       <i class="glyphicon glyphicon-pencil"></i>
@@ -503,14 +499,14 @@
                       ng-disabled="basic.editing_row"
                       type="button"
                       title="Duplicate"
-                      class="btn btn-primary btn-xs" ng-click="basic.duplicateRow(entry, $index)">
+                      class="btn btn-primary btn-xs btn-block" ng-click="basic.duplicateRow(entry, $index)">
                       <i class="glyphicon glyphicon-duplicate"></i>
                     </button>
                     <button
                       type="button"
                       title="Delete"
                       ng-disabled="basic.editing_row"
-                      class="btn btn-warning btn-xs"
+                      class="btn btn-warning btn-xs btn-block"
                       ng-click="basic.deleteRow(entry.disease_node_id, entry.phenotype_node_id, entry.ageofonset_node_id)">
                       <i class="glyphicon glyphicon-trash"></i>
                     </button>
@@ -519,14 +515,14 @@
                   <td
                     ng-if="basic.user_token && basic.editing_row === entry"
                     class="text-center action-row">
-                    <button type="button" class="btn btn-success btn-xs"
+                    <button type="button" class="btn btn-success btn-xs btn-block"
                       ng-disabled="!basic.isValidAssociation()"
                       ng-click="basic.saveEditedRow()">
                       <i class="glyphicon glyphicon-save"></i>
                     </button>
                     <button
                       type="button"
-                      class="btn btn-warning btn-xs"
+                      class="btn btn-warning btn-xs btn-block"
                       ng-click="basic.cancelEditRow($index)">
                       <i class="glyphicon glyphicon-ban-circle"></i>
                     </button>

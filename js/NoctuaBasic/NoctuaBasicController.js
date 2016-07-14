@@ -10,11 +10,17 @@ var angular = require('angular');
 var widgetry = require('noctua-widgetry');
 var selectize = require('selectize');
 
-var createSolrAutocompleteForElement = function(element, options) {
+var annotationSubjectKey = 'http://purl.org/dc/elements/1.1/subject'; // 'source';
+var annotationSubjectKeyShorthand = 'dc11:subject'; // 'source';
+var USE_UI_GRID = false;
+var USE_HP_RESTRICTION = false;
+
+
+function createSolrAutocompleteForElement(element, options) {
   var jqElement = jQuery(element);
   console.log('Creating solr-autocomplete widget for ' + element);
   jqElement.solrautocomplete(options);
-};
+}
 
 var solrautocomplete = {
   createSolrAutocompleteForElement: createSolrAutocompleteForElement
@@ -144,8 +150,6 @@ jQuery.widget('widget.solrautocomplete', {
 //
 // Angular controller
 //
-
-var USE_UI_GRID = false;
 
 function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $location, $anchorScroll, toastr, $window, $rootScope) {
   var that = this;
@@ -376,7 +380,10 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       r.remove_annotation_from_model("title", that.modelTitle);
       r.add_annotation_to_model("title", that.newTitle);
       that.modelTitle = that.newTitle;
+
+      console.log('1saveEditedTitle', that.modelTitle);
       manager.request_with(r, "edit_title");
+      console.log('2saveEditedTitle', that.modelTitle);
       _shields_down();
     }
     that.editingTitle = false;
@@ -412,30 +419,33 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     if (that.modelSubject !== that.newSubject) {
       _shields_up();
 
-      var r = new minerva_requests.request_set(manager.user_token(), model_id)
-      r.remove_annotation_from_model('source', that.modelSubject);
-      r.add_annotation_to_model('source', that.newSubject);
+      var r = new minerva_requests.request_set(manager.user_token(), model_id);
+      r.remove_annotation_from_model(annotationSubjectKey, that.modelSubject);
+      r.add_annotation_to_model(annotationSubjectKey, that.newSubject);
 
       var nodes = graph.get_nodes();
 
       var existing_disease_id = getExistingIndividualId(that.modelSubject, nodes);
+      console.log('existing_disease_id:', existing_disease_id);
       var subject_tmp_id = r.add_individual(that.newSubject);
+      console.log('subject_tmp_id:', subject_tmp_id);
 
       that.modelSubject = that.newSubject;
-      that.modelSubjectLabel = that.newSubject + ' (Label NYI)';
+      that.modelSubjectLabel = [that.newSubject, ' (Label NYI)'];
       that.modelSubjectNodeId = subject_tmp_id;
       console.log('existing_disease_id', existing_disease_id);
       console.log('that.modelSubject', that.modelSubject);
       console.log('that.modelSubjectLabel', that.modelSubjectLabel);
       console.log('that.modelSubjectNodeId', that.modelSubjectNodeId);
+      that.editingSubject = true;
       manager.request_with(r, "edit_subject");
       _shields_down();
     }
-    that.editingSubject = false;
+    // that.editingSubject = false;
 
-    if (!that.modelTitle) {
-      that.refresh_title();
-    }
+    // if (!that.modelTitle) {
+    //   that.refresh_title();
+    // }
   };
 
 
@@ -486,22 +496,26 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     } else {
       return "";
     }
-  }
+  };
 
-  extract_class_label_from_node = function(node) {
+  function extract_class_label_from_node(node) {
     var types = node._types;
-    if (types.length == 1) {
+
+    if (types.length === 1) {
       return types[0].class_label();
-    } else {
+    }
+    else {
       return "";
     }
   }
 
-  build_joined_label = function(id, label) {
-    return id === label ? label : (id + ' ' + label);
+  function build_joined_label(id, label) {
+    return id === label ? [label, label] : [id, label];
   }
 
   refresh_ui = function() {
+    console.log('refresh_ui', that.modelTitle);
+
     build_table();
     that.refresh_subject();
     that.refresh_title();
@@ -514,17 +528,19 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
   }
 
   this.refresh_subject = function() {
-    var annotations = graph.get_annotations_by_key('source');
+    var annotations = graph.get_annotations_by_key(annotationSubjectKeyShorthand);
     console.log('refresh_subject', annotations);
-    if (annotations.length == 0) {
+    if (annotations.length === 0) {
       // no subject set yet
-    } else {
+    }
+    else {
+      console.log('refresh_subject:', annotations);
       var subject = annotations[0].value(); // there should be only one
       that.modelSubject = subject;
       that.modelSubjectNodeId = subject;
-      that.modelSubjectLabel = subject;
+      that.modelSubjectLabel = [subject, subject];
     }
-  }
+  };
 
   this.refresh_title = function() {
     var annotations = graph.get_annotations_by_key("title");
@@ -756,7 +772,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       requestSetForDeletion(r, disease_node_id, phenotype_node_id, ageofonset_node_id);
       manager.request_with(r, "remove_row");
     }
-  }
+  };
 
   requestSetForDeletion = function(request_set, disease_node_id, phenotype_node_id, ageofonset_node_id) {
     var edges_from_disease = graph.get_edges_by_subject(disease_node_id);
@@ -768,7 +784,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     if (ageofonset_node_id != "") {
       request_set.remove_individual(ageofonset_node_id);
     }
-  }
+  };
 
   requestSetForCreation = function(request_set, disease_id, phenotype_id, ageofonset_id, evidence_reference, description, existing_disease_id) {
     var phenotype_tmp_id = request_set.add_individual(phenotype_id);
@@ -927,7 +943,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
         var value = annotation._properties.value;
         if (key == "evidence") {
           evidence_annotations.push(value);
-        } else if (key == "comment") {
+        } else if (key === "comment") {
           description = value;
         }
       }
@@ -966,7 +982,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
           htmlid: "ev" + counter
         };
       });
-      if (evidences.length == 0) {
+      if (evidences.length === 0) {
         evidences = "";
       }
 
@@ -986,6 +1002,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
         "description": description
       };
 
+      entry.index = entry.disease_id + '/' + entry.phenotype_id + '/' + age_of_onset_id;
       entry.disease = build_joined_label(entry.disease_id, entry.disease_label);
       entry.phenotype = build_joined_label(entry.phenotype_id, entry.phenotype_label);
       entry.ageofonset = build_joined_label(entry.ageofonset_id, entry.ageofonset_label);
@@ -1063,31 +1080,51 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
 
     manager.register('merge', 'merdge', function(resp, man) {
       console.log("manager_merge");
-      console.log(resp.data());
-      console.log(man);
+      var data = resp.data();
+      // console.log(data);
 
       that.response_model = JSON.stringify(resp);
       var tmp_graph = new graph_api.graph();
       tmp_graph.load_data_basic(resp.data());
       graph.merge_special(tmp_graph);
 
-      that.selected_disease = null;
-      that.selected_phenotype = null;
-      that.selected_ageofonset = null;
+      if (that.editingSubject) {
+        var individuals = data.individuals;
+        var subjectId = individuals[0].type[0].id;
+        var subjectLabel = individuals[0].type[0].label;
 
-      that.selected_ev_ref_list = [];
-      that.selected_description = null;
+        console.log('subjectId:', subjectId);
+        console.log('subjectLabel:', subjectLabel);
+        console.log('that.modelTitle:', that.modelTitle);
+        console.log('that.newTitle:', that.newTitle);
+        console.log('that.editingSubject:', that.editingSubject);
+        that.modelSubjectLabel = [subjectId, subjectLabel];
+        that.editingSubject = false;
+        that.newTitle = subjectId + ' - ' + subjectLabel;
+        that.modelTitle = null;
+        console.log('1merge', that.newTitle);
+        that.saveEditedTitle();
+        console.log('2merge', that.newTitle);
+      }
+      else {
+        that.selected_disease = null;
+        that.selected_phenotype = null;
+        that.selected_ageofonset = null;
 
-      that.$rootScope.$apply(refresh_ui);
+        that.selected_ev_ref_list = [];
+        that.selected_description = null;
 
-      _shields_down();
-      that.displayToast("success", resp._message);
+        that.$rootScope.$apply(refresh_ui);
+
+        _shields_down();
+        that.displayToast("success", resp._message);
+      }
     }, 10);
   }
 
   initializeAutocomplete = function() {
     var gconf = new bbop.golr.conf(golr_json);
-    golr_loc = 'http://solr-dev.monarchinitiative.org/solr/monarchAutocomplete/';
+    golr_loc = 'https://solr.monarchinitiative.org/solr/ontology/';
 
     var golr_manager_for_disease = new bbop.golr.manager.jquery(golr_loc, gconf);
     golr_manager_for_disease.set_results_count(50);
@@ -1111,9 +1148,13 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
         valueField: 'id',
         searchField: ['id', 'annotation_class_label_searchable'],
         queryData: function(query) {
+          var idRestriction = '';
+          if (USE_HP_RESTRICTION) {
+            idRestriction = ' AND id:OMIM\\:*';
+          }
           //return 'isa_partof_closure_label_searchable:disease AND id:*' + query.replace(':', '\\:').toUpperCase() + '*';
           // return 'isa_partof_closure_label_searchable:disease AND annotation_class_label_searchable:*' + query + '*';
-          return 'isa_partof_closure_label_searchable:disease AND id:OMIM\\:* AND annotation_class_label_searchable:*' + query + '*';
+          return 'isa_partof_closure_label_searchable:disease' + idRestriction + ' AND annotation_class_label_searchable:*' + query + '*';
         },
         golrManager: golr_manager_for_disease
       }
@@ -1140,9 +1181,14 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
         valueField: 'id',
         searchField: ['id', 'annotation_class_label_searchable'],
         queryData: function(query) {
+          var idRestriction = '';
+          if (USE_HP_RESTRICTION) {
+            idRestriction = ' AND id:HP\\:*';
+          }
+
           //return 'isa_partof_closure_label_searchable:phenotype AND id:*' + query.replace(':', '\\:').toUpperCase() + '*';
           // return 'isa_partof_closure_label_searchable:phenotype AND annotation_class_label_searchable:*' + query + '*';
-          return 'isa_partof_closure_label_searchable:phenotype AND id:HP\\:* AND annotation_class_label_searchable:*' + query + '*';
+          return 'isa_partof_closure_label_searchable:phenotype' + idRestriction + ' AND annotation_class_label_searchable:*' + query + '*';
         },
         golrManager: golr_manager_for_phenotype
       }
@@ -1301,62 +1347,63 @@ app.filter('mapGender', function() {
 
 
 
+if (USE_UI_GRID) {
 
+  uiSelectWrapIcon.$inject = ['$document', 'uiGridEditConstants'];
+  function uiSelectWrapIcon($document, uiGridEditConstants) {
+    return function link($scope, $elm, $attr) {
+      $document.on('clickIcon', docClick);
 
-uiSelectWrapIcon.$inject = ['$document', 'uiGridEditConstants'];
-function uiSelectWrapIcon($document, uiGridEditConstants) {
-  return function link($scope, $elm, $attr) {
-    $document.on('clickIcon', docClick);
-
-    function docClick(evt) {
-      if (jQuery(evt.target).closest('.ui-select-container').size() === 0) {
-        $scope.$emit(uiGridEditConstants.events.END_CELL_EDIT);
-        $document.off('click', docClick);
+      function docClick(evt) {
+        if (jQuery(evt.target).closest('.ui-select-container').size() === 0) {
+          $scope.$emit(uiGridEditConstants.events.END_CELL_EDIT);
+          $document.off('click', docClick);
+        }
       }
-    }
-  };
-}
+    };
+  }
 
 
-uiSelectWrap.$inject = ['$document', 'uiGridEditConstants'];
-function uiSelectWrap($document, uiGridEditConstants) {
-  return {
-    require: '?^uiGrid',
-    link: link
-  };
+  uiSelectWrap.$inject = ['$document', 'uiGridEditConstants'];
+  function uiSelectWrap($document, uiGridEditConstants) {
+    return {
+      require: '?^uiGrid',
+      link: link
+    };
 
-  function link($scope, $elm, $attr, uiGridCtrl) {
-    $document.on('click', docClick);
+    function link($scope, $elm, $attr, uiGridCtrl) {
+      $document.on('click', docClick);
 
-    //set focus at start of edit
-    $scope.$on(uiGridEditConstants.events.BEGIN_CELL_EDIT, function (evt, args) {
-      hideOnCellnav();
-    });
+      //set focus at start of edit
+      $scope.$on(uiGridEditConstants.events.BEGIN_CELL_EDIT, function (evt, args) {
+        hideOnCellnav();
+      });
 
-    function hideOnCellnav() {
-      if (uiGridCtrl && uiGridCtrl.grid.api.cellNav) {
-        var dereg = uiGridCtrl.grid.api.cellNav.on.navigate($scope, function (newRowCol, oldRowCol) {
-          if ($scope.col.colDef.enableCellEditOnFocus) {
-            if (newRowCol.row !== $scope.row || newRowCol.col !== $scope.col) {
-              $scope.$emit(uiGridEditConstants.events.END_CELL_EDIT);
-              dereg();
+      function hideOnCellnav() {
+        if (uiGridCtrl && uiGridCtrl.grid.api.cellNav) {
+          var dereg = uiGridCtrl.grid.api.cellNav.on.navigate($scope, function (newRowCol, oldRowCol) {
+            if ($scope.col.colDef.enableCellEditOnFocus) {
+              if (newRowCol.row !== $scope.row || newRowCol.col !== $scope.col) {
+                $scope.$emit(uiGridEditConstants.events.END_CELL_EDIT);
+                dereg();
+              }
             }
-          }
-        });
+          });
+        }
       }
-    }
 
-    function docClick(evt) {
-      if (jQuery(evt.target).closest('.ui-select-container').size() === 0) {
-        $scope.$emit(uiGridEditConstants.events.END_CELL_EDIT);
-        $document.off('click', docClick);
+      function docClick(evt) {
+        if (jQuery(evt.target).closest('.ui-select-container').size() === 0) {
+          $scope.$emit(uiGridEditConstants.events.END_CELL_EDIT);
+          $document.off('click', docClick);
+        }
       }
     }
   }
-}
 
-app.directive('uiSelectWrap', uiSelectWrap);
-app.directive('uiSelectWrapIcon', uiSelectWrapIcon);
+  app.directive('uiSelectWrap', uiSelectWrap);
+  app.directive('uiSelectWrapIcon', uiSelectWrapIcon);
+}
 
 // NoctuaBasicController.$inject = ['$animate', '$timeout', '$location', '$anchorScroll', 'toastr', '$window', '$rootScope'];
 
