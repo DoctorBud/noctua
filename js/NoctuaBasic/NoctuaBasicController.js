@@ -349,7 +349,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     } else {
       return true;
     }
-  }
+  };
 
   this.store = function() {
     // this.setTitle(this.modelTitle);
@@ -377,6 +377,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       r.remove_annotation_from_model("title", that.modelTitle);
       r.add_annotation_to_model("title", that.newTitle);
       that.modelTitle = that.newTitle;
+      r.store_model(model_id);
 
       manager.request_with(r, "edit_title");
       _shields_down();
@@ -544,12 +545,12 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
 
   this.isValidAssociation = function () {
     return  that.selected_disease &&
-            that.selected_phenotype &&
-            that.selected_ageofonset &&
-            that.selected_ev_ref_list.length > 0 &&
-            that.selected_ev_ref_list[0].ev &&
-            that.selected_ev_ref_list[0].ev.length &&
-            that.selected_description;
+            that.selected_phenotype;
+            // that.selected_ageofonset &&
+            // that.selected_ev_ref_list.length > 0 &&
+            // that.selected_ev_ref_list[0].ev &&
+            // that.selected_ev_ref_list[0].ev.length &&
+            // that.selected_description;
   };
 
   this.create = function() {
@@ -715,9 +716,16 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       }
     }
 
+    var ev_ref_list = that.selected_ev_ref_list;
+    if (ev_ref_list.length === 1 &&
+        ev_ref_list[0].ev === '') {
+      ev_ref_list = [];
+    }
+
     var r = new minerva_requests.request_set(manager.user_token(), model_id);
     requestSetForDeletion(r, that.selected_disease_node_id_previous, that.selected_phenotype_node_id_previous, that.selected_ageofonset_node_id_previous);
-    requestSetForCreation(r, that.selected_disease, that.selected_phenotype, that.selected_ageofonset, that.selected_ev_ref_list, that.selected_description, existing_disease);
+    requestSetForCreation(r, that.selected_disease, that.selected_phenotype, that.selected_ageofonset, ev_ref_list, that.selected_description, existing_disease);
+    r.store_model(model_id);
     manager.request_with(r, "edit_row");
   };
 
@@ -835,6 +843,13 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     if (selected_ev_ref_list.length === 0) {
       that.add_ev(selected_ev_ref_list, rowIndex);
     }
+    else {
+      underscore.each(that.selected_ev_ref_list, function(ev_ref) {
+        if (!ev_ref.ref_list || ev_ref.ref_list.length === 0) {
+          that.add_ref(ev_ref);
+        }
+      });
+    }
   };
 
   this.lookup_ev_by_id = function(ev_id) {
@@ -867,10 +882,14 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     selectize.clearOptions();
   }
 
-  this.add_ref = function(ev_ref) {
+  this.ensure_reflist = function(ev_ref) {
     if (ev_ref.ref_list == null || ev_ref.ref_list == undefined) {
       ev_ref.ref_list = [];
     }
+  };
+
+  this.add_ref = function(ev_ref) {
+    this.ensure_reflist(ev_ref);
     var newItemNo = ev_ref.ref_list.length + 1;
     var new_id = ev_ref.htmlid + 'ref' + newItemNo;
     ev_ref.ref_list.push({
