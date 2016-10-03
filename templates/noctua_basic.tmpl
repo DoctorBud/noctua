@@ -81,7 +81,7 @@
 
   <div id="noctua-app"
     style="margin:0 15px 0 15px;">
- 
+
     <div
       class="container-fluid"
       ng-if="!basic.response_model">
@@ -182,58 +182,12 @@
             </div>
           </div>
         </div>
-
-        <div ng-if="false" class="panel-footer">
-          <div
-            class="row"
-            ng-if="basic.modelSubject">
-            <div
-              ng-if="basic.user_token"
-              class="text-center col-xs-3">
-              <button
-                type="button"
-                class="btn btn-primary btn-sm" ng-click="basic.addRow()">
-                Add Association
-              </button>
-            </div>
-
-            <div
-              ng-if="basic.user_token"
-              class="text-center col-xs-3">
-              <button
-                ng-disabled="!basic.isValidModel() || basic.editingTitle || basic.editingSubject"
-                id="save_button"
-                type="button"
-                class="btn btn-primary btn-sm"
-                ng-click="basic.store()">
-                Save
-              </button>
-            </div>
-            <div class="text-center col-xs-3">
-              <a
-                ng-disabled="!basic.isValidModel() || basic.editingTitle || basic.editingSubject"
-                type="button" class="btn btn-primary btn-sm"
-                href="{{basic.edit_graph_url}}">
-                Graph
-              </a>
-            </div>
-            <div class="text-center col-xs-3">
-              <a
-                ng-disabled="!basic.isValidModel() || basic.editingTitle || basic.editingSubject"
-                type="button" class="btn btn-primary btn-sm"
-                href="{{basic.export_owl_url}}"
-                target="_blank">
-                Export
-              </a>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div ng-if="basic.modelSubject">
-        <script type="text/ng-template" id="uiSelect">
+        <script type="text/ng-template" id="uiACSelect">
           <div
-            ng-if="false"
+            ng-if="true"
             style="background:lightyellow;position:fixed !important;z-index:1000;top:0;right:50px;width:300px;height:200px;padding:10px;">
             <pre>modelcol: MODEL_COL_FIELD</pre>
             <pre>col: COL_FIELD</pre>
@@ -247,32 +201,108 @@
               theme="selectize"
               ng-disabled="disabled"
               reset-search-input="true"
-              append-to-body="false">
+              append-to-body="false"
+              xng-keypress="grid.appScope.basic.keypressed($select, $event)">
               <ui-select-match placeholder="Choose...">
                 {{COL_FIELD.label}}
               </ui-select-match>
-              <ui-select-choices repeat="item in col.colDef.editDropdownOptionsArray | filter: $select.search">
-                <div ng-bind-html="item.label | highlight: $select.search"></div>
-                <small ng-bind-html="col.colDef.editDropdownOptionsArray.length"></small>
+              <ui-select-choices
+                refresh="grid.appScope.basic.refreshSelect($select)"
+                repeat="item in col.colDef.editDropdownOptionsArray | filter: $select.search">
+                <div ng-bind-html="item.label | highlight: $select.search">
+                </div>
+                <small
+                  ng-bind-html="col.colDef.editDropdownOptionsArray.length">
+                </small>
               </ui-select-choices>
             </ui-select>
           </ui-select-wrap>
         </script>
 
+        <script type="text/ng-template" id="uiJQSelect">
+          <div
+            ng-if="true"
+            style="background:lightyellow;position:fixed !important;z-index:1000;top:0;right:50px;width:300px;height:200px;padding:10px;">
+            <pre>modelcol: MODEL_COL_FIELD</pre>
+            <pre>col: COL_FIELD</pre>
+            <pre>*modelcol: {{MODEL_COL_FIELD}}</pre>
+            <pre>*col: {{COL_FIELD}}</pre>
+          </div>
+          <select
+            autofocus
+            class="form-control"
+            id="select_phenotype_{{$index}}"
+            placeholder="Pick a Phenotype...">
+          </select>
+
+<!--
+          <ui-select-wrap>
+            <ui-select
+              search-enabled="true"
+              ng-model="MODEL_COL_FIELD"
+              theme="selectize"
+              ng-disabled="disabled"
+              reset-search-input="true"
+              append-to-body="false">
+              <ui-select-match placeholder="Choose...">
+                {{COL_FIELD.label}}
+              </ui-select-match>
+              <ui-select-choices
+                repeat="item in col.colDef.editDropdownOptionsArray | filter: $select.search">
+                <div ng-bind-html="item.label | highlight: $select.search">
+                </div>
+                <small
+                  ng-bind-html="col.colDef.editDropdownOptionsArray.length">
+                </small>
+              </ui-select-choices>
+            </ui-select>
+          </ui-select-wrap>
+-->
+
+        </script>
+
         <div
-          ng-if="basic.USE_UI_GRID"
+          ng-if="basic.USE_UI_GRID && basic.user_token"
           class="row">
           <div
-            id="grid1"
-            ui-grid="basic.gridOptions"
-            ui-grid-edit ui-grid-row-edit ui-grid-cellNav
-            ui-grid-resize-columns ui-grid-auto-resize
-            class="col-xs-12 grid"
-            style="height:200px;">
+            ng-if="basic.user_token"
+            class="col-xs-11">
+            &nbsp;
+          </div>
+          <div
+            class="col-xs-1">
+            <button
+              type="button"
+              name="Add Association"
+              title="Add Association"
+              ng-disabled="basic.editing_row"
+              class="pull-rightx btn btn-secondary xbtn-xs btn-compact" ng-click="basic.addRow()">
+              <i class="glyphicon glyphicon-plus"></i>
+            </button>
           </div>
         </div>
 
         <div
+          ng-if="basic.USE_UI_GRID"
+          class="row">
+
+          <div class="col-xs-12">
+            <div
+              id="grid1"
+              ui-grid="basic.gridOptions"
+              ui-grid-edit
+              ui-grid-row-edit
+              ui-grid-cellNav
+              ui-grid-resize-columns
+              ui-grid-auto-resize
+              class="grid"
+              style="margin:0;padding:0;">
+            </div>
+          </div>
+        </div>
+
+        <div
+          ng-if="!basic.USE_UI_GRID"
           class="row">
 
           <div
