@@ -292,7 +292,9 @@ gulp.task('watch-noctua', function(cb) {
 // Rerun tasks when a file changes.
 gulp.task('watch-form', function(cb) {
     watch_mode = true;
-    var basic_client_files = paths.form_noctua_clients.concat('js/NoctuaBasic/NoctuaBasicController.js');
+    var basic_client_files = paths.form_noctua_clients.concat(
+                                'js/NoctuaBasic/NoctuaBasicController.js',
+                                'node_modules/selectize/dist/js/standalone/selectize.js');
     gulp.watch(basic_client_files, form_build_tasks);
     cb(null);
 });
