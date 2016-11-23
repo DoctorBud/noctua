@@ -3,7 +3,7 @@
 ////
 
 var gulp = require('gulp');
-//var jsdoc = require("gulp-jsdoc");
+var jsdoc = require('gulp-jsdoc3');
 var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha');
 var shell = require('gulp-shell');
@@ -145,11 +145,23 @@ var paths = {
 //     tests: ['tests/*.test.js']
 // };
 
-///
-/// Build tasks.
-///
+//
+// Build tasks.
+//
 
 // // Build docs directory with JSDoc.
+gulp.task('doc', function (cb) {
+    var globs = [].concat(
+        paths.form_noctua_clients,
+        'js/NoctuaBasic/NoctuaBasicController.js',
+        paths.core_noctua_clients,
+        paths.core_barista_clients,
+        paths.core_workbench_clients,
+        paths.scripts);
+    gulp.src(globs, {read: false})
+        .pipe(jsdoc(cb));
+});
+
 // gulp.task('doc', function() {
 //   gulp.src(paths.clients, paths.scripts)
 //     .pipe(jsdoc('./doc'));

@@ -92,12 +92,12 @@ package_iterator(start_dir, function(obj, fname){
     if( obj['name'] && obj['dependencies'] ){
 	
 	var complaints = [];
-	each( obj['dependencies'], function(version, package){
+	each( obj['dependencies'], function(version, package_name){
 	    
-	    if( package_version[package] ){
-		if( package_version[package] !== version ){
-		    complaints.push( package + ': ' + version + ' ?-> ' +
-				     package_version[package]);
+	    if( package_version[package_name] ){
+		if( package_version[package_name] !== version ){
+		    complaints.push( package_name + ': ' + version + ' ?-> ' +
+				     package_version[package_name]);
 		}
 	    }
 	});

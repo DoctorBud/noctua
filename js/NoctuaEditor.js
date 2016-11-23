@@ -1,8 +1,8 @@
 /**
  * NoctuaEditor runner.
- * Application initializer.
- * Application logic.
- * Initialze with (optional) incoming data and setup the GUI.
+ * - Application initializer.
+ * - Application logic.
+ * - Initialize with (optional) incoming data and setup the GUI.
  *
  * @module NoctuaEditor
  */
@@ -32,10 +32,10 @@ var jQuery = require('jquery');
 var jsPlumb = require('jsplumb');
 /* jshint ignore:end */
 
-//require('jquery-ui');
-//require('bootstrap');
-//require('tablesorter');
-//require('./js/connectors-sugiyama.js');
+// require('jquery-ui');
+// require('bootstrap');
+// require('tablesorter');
+// require('./js/connectors-sugiyama.js');
 var bbop_legacy = require('bbop').bbop;
 var bbopx = require('bbopx');
 var amigo = require('amigo2');

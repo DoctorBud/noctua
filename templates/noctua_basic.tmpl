@@ -96,7 +96,7 @@
       ng-if="basic.response_model">
       <div class="panel panel-default">
         <div
-          ng-if="!basic.modelSubject"
+          ng-if="false && !basic.modelSubject"
           class="panel-heading">
           <h4 class="text-center">
           Select a Disease
@@ -106,23 +106,98 @@
           <div
             ng-hide="basic.modelSubject"
             class="row">
-            <div
-              class="col-xs-9 col-sm-10">
-              <select
-                autofocus
-                class="form-control"
-                id="select_subject_default"
-                placeholder="Pick a Disease...">
-              </select>
-            </div>
-            <div
-              class="col-xs-3 col-sm-2">
-              <button
-                ng-disabled="!(basic.newSubject)"
-                type="button" class="btn btn-primary xbtn-sm" ng-click="basic.saveEditedSubject()">
-                Set Disease
-              </button>
-            </div>
+            <uib-tabset active="active">
+              <uib-tab index="0" heading="Select Disease" select="basic.importing=false">
+                <div
+                  class="col-xs-9 col-sm-10">
+                  <select
+                    autofocus
+                    class="form-control"
+                    id="select_subject_default"
+                    placeholder="Pick a Disease...">
+                  </select>
+                </div>
+                <div
+                  class="col-xs-3 col-sm-2">
+                  <button
+                    ng-disabled="!(basic.newSubject)"
+                    type="button" class="btn btn-primary xbtn-sm" ng-click="basic.setDisease()">
+                    Set Disease
+                  </button>
+                </div>
+              </uib-tab>
+              <uib-tab ng-if="basic.modelType === 'hpo'"
+                index="1" heading="Import Disease" select="basic.importing=true">
+                <div
+                  class="col-xs-12">
+                  <label class="btn btn-default btn-file">
+                    Select Import File
+                    <input
+                      type="file"
+                      style="display: none;"
+                      xaccept="text/*"
+                      id="import-file"
+                      name="import-file-name"
+                      ng-model="basic.importFilename"
+                      onchange="angular.element(this).scope().basic.importFileChanged(this.files)">
+                  </label>
+                </div>
+                <div
+                  class="col-xs-9">
+                  <div class="input-group">
+                    <span class="input-group-addon" id="basic-addon1">Select Import URL</span>
+                    <input
+                      ng-model="basic.importTSVUrl"
+                      type="text"
+                      class="form-control"
+                      placeholder="Enter a URL to an HPO TSV file"
+                      aria-describedby="basic-addon1">
+                  </div>
+                </div>
+                <div class="col-xs-2">
+                  <button
+                    type="button"
+                    ng-disabled="basic.importTSVUrl.length === 0"
+                    class="btn btn-success btn-sm"
+                    ng-click="basic.importModelFromTSVUrl()">
+                    Import URL
+                  </button>
+                </div>
+                <hr>
+                <div
+                  ng-hide="!(basic.modelType === 'hpo' && basic.importing && basic.importedModel)"
+                  class="col-xs-12 pre-scrollable">
+
+                  <h4>Preview: {{basic.importFilename}}</h4>
+                  <table
+                    class="table table-bordered table-condensed table-responsive"
+                    style="font-size:0.8em;">
+                    <thead>
+                      <th ng-repeat="c in basic.importedModelColumns">
+                      {{c}}
+                      </th>
+                    </thead>
+
+                    <tbody>
+                      <tr ng-repeat="m in basic.importedModel">
+                        <td ng-repeat="c in basic.importedModelColumns">
+                        {{m[c]}}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div
+                  class="col-xs-12">
+                  <button
+                    ng-if="basic.importedModel"
+                    ng-disabled="!(basic.newSubject)"
+                    type="button" class="btn btn-primary btn-block btn-sm" ng-click="basic.setDisease()">
+                    Set Disease
+                  </button>
+                </div>
+              </uib-tab>
+            </uib-tabset>
           </div>
 
           <div

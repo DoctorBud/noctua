@@ -1,3 +1,12 @@
+/**
+ * NoctuaBasicApp
+ * - AngularJS Application for WebPhenote (form) mode.
+ * - Load dependent modules
+ * - Configure AngularJS services and directives
+ *
+ * @module NoctuaBasicApp
+ */
+
 var angular = require('angular');
 
 require('bs-table');

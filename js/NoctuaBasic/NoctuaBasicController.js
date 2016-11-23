@@ -1,3 +1,10 @@
+/**
+ * NoctuaBasicController
+ * - AngularJS Controller for WebPhenote (form) mode.
+ *
+ * @module NoctuaBasicController
+ */
+
 /* eslint-disable */
 /* eslint new-cap: 0 */
 /* global global_barista_token */   // from puptent
@@ -8,15 +15,20 @@
 
 var jQuery = require('jquery');
 var bbop = require('bbop').bbop;
-var bbopx = require('bbopx');
+// var bbopx = require('bbopx');
 var underscore = require('underscore');
 var _ = underscore;
 var graph_api = require('bbop-graph-noctua');
 var minerva_requests = require('minerva-requests');
+var jquery_engine = require('bbop-rest-manager').jquery;
+var minerva_manager = require('bbop-manager-minerva');
+var barista_response = require('bbop-response-barista');
+
+
 var angular = require('angular');
 var widgetry = require('noctua-widgetry');
 var selectize = require('selectize');
-
+var Papa = require('papaparse');
 var annotationTitleKey = 'title';
 var annotationSubjectKeyShorthand = 'dc11:subject';
 var annotationSubjectKey = 'http://purl.org/dc/elements/1.1/subject';
@@ -163,10 +175,9 @@ jQuery.widget('widget.solrautocomplete', {
 });
 
 
-//
-// Angular controller
-//
-
+/**
+ * Angular controller.
+ */
 function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $location, $anchorScroll, toastr, $window, $rootScope, uiGridConstants) {
   var that = this;
 
@@ -232,7 +243,6 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     this.saveRowPromise = null;
 
     this.saveRow = function(rowEntity) {
-      console.log('saveRow...this:', this, ' row:', rowEntity);
       that.selected_description = rowEntity.description;
       // // create a fake promise - normally you'd use the promise returned by $http or $resource
       var promise = this.$q.defer();
@@ -339,6 +349,11 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
   this.modelSubjectNodeId = null;
   this.modelType = global_model_type;
 
+  this.importTSVUrl = '';
+  this.importedModel = null;
+  this.importedModelColumns = null;
+  this.importFilename = null;
+
   //
   // Mapping between HPO Short Codes and either an ECO code or an HPO synthetic code.
   // Once the ECO incorporates HPO's codes, this code can be simplified or deleted.
@@ -371,7 +386,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       // Already have one.
     }
     else {
-      compute_shield_modal = bbopx.noctua.widgets.compute_shield();
+      compute_shield_modal = widgetry.compute_shield();
       compute_shield_modal.show();
     }
   }
@@ -410,9 +425,16 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     }
     else {
       _shields_up();
-      manager = new bbopx.minerva.manager(global_barista_location,
-        global_minerva_definition_name,
-        user_token);
+
+      var engine = new jquery_engine(barista_response);
+      engine.method('POST');
+      manager = new minerva_manager(global_barista_location,
+                global_minerva_definition_name,
+                user_token, engine, 'async');
+
+      // manager = new bbopx.minerva.manager(global_barista_location,
+      //   global_minerva_definition_name,
+      //   user_token);
       initializeAutocomplete();
       initializeCallbacks();
       manager.get_model(model_id);
@@ -502,7 +524,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     }
   }
 
-  this.saveEditedSubject = function() {
+  this.setDisease = function() {
     if (that.modelSubject !== that.newSubject) {
       _shields_up();
 
@@ -605,37 +627,37 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
 
 
   this.isValidAssociation = function () {
-    return that.selected_disease &&
-            that.selected_phenotype;
+    var result = !!(that.selected_disease && that.selected_phenotype);
             // that.selected_ageofonset &&
             // that.selected_evidence_metadata.length > 0 &&
             // that.selected_evidence_metadata[0].ev &&
             // that.selected_evidence_metadata[0].ev.length &&
             // that.selected_description;
+    return result;
   };
 
-  this.create = function() {
-    var disease_id = that.selected_disease;
-    var phenotype_id = that.selected_phenotype;
-    var ageofonset_id = that.selected_ageofonset;
-    var evidence_metadata = that.selected_evidence_metadata;
-    var description = that.selected_description;
+  // never called... deleteme
+  // this.create = function() {
+  //   var disease_id = that.selected_disease;
+  //   var phenotype_id = that.selected_phenotype;
+  //   var ageofonset_id = that.selected_ageofonset;
+  //   var evidence_metadata = that.selected_evidence_metadata;
+  //   var description = that.selected_description;
 
-    _shields_up();
-    if (sanity_check()) {
-      var r = new minerva_requests.request_set(manager.user_token(), model_id);
-      var nodes = graph.get_nodes();
-      // fetching exising disease individual if it exists
-      var existing_disease_id = getExistingIndividualId(disease_id, nodes);
+  //   _shields_up();
+  //   if (sanity_check()) {
+  //     var r = new minerva_requests.request_set(manager.user_token(), model_id);
+  //     var nodes = graph.get_nodes();
+  //     // fetching exising disease individual if it exists
+  //     var existing_disease_id = getExistingIndividualId(disease_id, nodes);
 
-      requestSetForCreation(r, disease_id, phenotype_id, ageofonset_id, evidence_metadata, description, existing_disease_id);
-      var result = manager.request_with(r, "create");
-
-    }
-    else {
-      _shields_down();
-    }
-  }
+  //     requestSetForCreation(r, disease_id, phenotype_id, ageofonset_id, evidence_metadata, description, existing_disease_id);
+  //     var result = manager.request_with(r, "create");
+  //   }
+  //   else {
+  //     _shields_down();
+  //   }
+  // }
 
 
   this.addRow = function() {
@@ -675,6 +697,88 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     }
   };
 
+  this.importComplete = function(results, file) {
+    that.importedModelColumns = results.meta.fields;
+    that.importedModel = results.data;
+
+    if (that.importedModel.length > 0) {
+      var firstRow = that.importedModel[0];
+
+      if ('Disease ID' in firstRow && 'Disease Name' in firstRow) {
+        that.newSubject = firstRow['Disease ID'];
+        that.newTitle = firstRow['Disease Name'];
+      }
+      else {
+        console.log('#### Error importing:', that.importFilename);
+      }
+    }
+  };
+
+  this.importFileChanged = function(files) {
+    console.log('importFileChanged', files);
+    var config = {
+      download: false,
+      delimiter: '\t',  // auto-detect
+      header: true,
+      // dynamicTyping: false,
+      // preview: 0,
+      // encoding: "",
+      // worker: false,
+      // comments: false,
+      // step: undefined,
+      // complete: undefined,
+      // error: undefined,
+      // download: false,
+      skipEmptyLines: true,
+      // chunk: undefined,
+      // fastMode: undefined,
+      // beforeFirstChunk: undefined,
+      // withCredentials: undefined
+    };
+
+    config.complete = function(results, file) {
+      that.$scope.$apply(function() {
+        that.importComplete(results, file);
+      });
+    };
+
+    this.newSubject = null;
+    this.newTitle = null;
+    this.importFilename = files[0].name;
+    Papa.parse(files[0], config);
+  };
+
+  this.importModelFromTSVUrl = function() {
+    var url = this.importTSVUrl;
+    var config = {
+      download: true,
+      delimiter: '\t',  // auto-detect
+      header: true,
+      // dynamicTyping: false,
+      // preview: 0,
+      // encoding: "",
+      // worker: false,
+      // comments: false,
+      // step: undefined,
+      // complete: undefined,
+      // error: undefined,
+      // download: false,
+      skipEmptyLines: true,
+      // chunk: undefined,
+      // fastMode: undefined,
+      // beforeFirstChunk: undefined,
+      // withCredentials: undefined
+    };
+
+    config.complete = function(results, file) {
+      // console.log("Parsing complete:", results, file);
+      that.$scope.$apply(function() {
+        that.importComplete(results, file);
+      });
+    };
+
+    Papa.parse(url, config);
+  };
 
   this.editRow = function(row, rowIndex, isNew) {
     that.editing_row = row;
@@ -878,7 +982,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     var ev_ref_list = that.selected_evidence_metadata.map(function(e) {
       e = angular.copy(e);
       if (e.id in that.HPShortCodes) {
-        e.id = 'HP:ECO_' + e.id;
+        e.id = that.HPShortCodes[e.id].id;
       }
       return e;
     });
@@ -887,9 +991,6 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
         (!ev_ref_list[0].id || ev_ref_list[0].id === '')) {
       ev_ref_list = [];
     }
-
-    // console.log('saveEditedRow...requestSetForDeletion:', that.selected_disease_node_id_previous, that.selected_phenotype_node_id_previous, that.selected_ageofonset_node_id_previous);
-    // console.log('saveEditedRow...requestSetForCreation:', that.selected_disease, that.selected_phenotype, that.selected_ageofonset, ev_ref_list, that.selected_description, existing_disease);
 
     var r = new minerva_requests.request_set(manager.user_token(), model_id);
     requestSetForDeletion(r, that.selected_disease_node_id_previous, that.selected_phenotype_node_id_previous, that.selected_ageofonset_node_id_previous);
@@ -1045,9 +1146,6 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
   };
 
   function build_table() {
-    var firstModelSubject = null;
-    var firstModelSubjectLabel = '';
-
     that.grid_model = [];
     var edges = graph.all_edges();
     var has_phenotype_edges = underscore.filter(edges, function(edge) {
@@ -1156,6 +1254,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
         "description": description
       };
 
+      // console.log('entry', entry, disease_node);
       entry.index = entry.disease_id + '/' + entry.phenotype_id + '/' + age_of_onset_id;
       entry.disease = build_joined_label(entry.disease_id, entry.disease_label);
       entry.phenotype = build_joined_label(entry.phenotype_id, entry.phenotype_label);
@@ -1164,12 +1263,12 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       if (that.USE_UI_GRID) {
         entry.rowIndex = that.grid_model.length;
       }
-
+      // console.log('build_table before set_subject that.modelSubject', that.modelSubject);
       if (!that.modelSubject) {
         that.set_subject(entry.disease_id);
       }
       else if (that.modelSubject !== entry.disease_id) {
-        console.log('####build_table non-identical subject detected', that.modelSubject, entry.disease_id);
+        console.log('####build_table non-identical subject detected', that.modelSubject, entry);
       }
 
       that.grid_model.push(entry);
@@ -1208,11 +1307,90 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       var individuals = data.individuals;
       var subjectId = individuals[0].type[0].id;
 
-      console.log('subjectId:', subjectId);
-      console.log('that.modelTitle:', that.modelTitle);
-      console.log('that.newTitle:', that.newTitle);
+      // console.log('manager_changed graph:', graph);
+      // console.log('manager_changed modelSubject:', that.modelSubject);
+      // console.log('manager_changed individuals:', individuals);
+      // console.log('subjectId:', subjectId);
+      // console.log('that.modelTitle:', that.modelTitle);
+      // console.log('that.newTitle:', that.newTitle);
       that.modelSubjectLabel = [subjectId, subjectId];
-      that.editingSubject = false;
+
+      if (that.importedModel) {
+        _shields_up();
+
+        var disease_id = subjectId;
+        disease_id = disease_id.replace(/^MESH:/, 'MeSH:');
+
+        var r = new minerva_requests.request_set(manager.user_token(), model_id);
+        var existing_disease = r.add_individual(disease_id);
+
+        var rowIndex = -1;
+        _.each(that.importedModel, function(row) {
+          ++rowIndex;
+
+          var ev_id = row['Evidence ID'];
+          if (ev_id in that.HPShortCodes) {
+            ev_id = that.HPShortCodes[ev_id].id;
+          }
+
+          var ev = {
+            id: ev_id,
+            htmlid: ev_id,
+            ref_list: [row['Pub']]
+          };
+
+          var ev_list = [ev];
+          // console.log('ev_list', ev_list);
+          // requestSetForCreation(r, existing_disease, row['Phenotype ID'], row['Age of Onset ID'],
+          //   ev_list, row['Description'], null);
+
+          var phenotype_id = row['Phenotype ID'];
+          var ageofonset_id = row['Age of Onset ID'];
+          var description = row['Description'];
+
+          var phenotype_tmp_id = r.add_individual(phenotype_id);
+          r.add_fact([existing_disease,
+            phenotype_tmp_id,
+            has_phenotype_relation
+          ]);
+
+          // Attach the metadata to the phenotype individual
+          if (ev_list !== "" &&
+              ev_list !== null &&
+              ev_list.length !== 0) {
+            underscore.map(ev_list, function(ev) {
+              var evidence_tmp_id = r.add_individual(ev.id);
+              r.add_annotation_to_individual("evidence", evidence_tmp_id, null, phenotype_tmp_id);
+              var ref_list = ev.ref_list;
+              if (ref_list !== "" && ref_list !== null && ref_list.length !== 0) {
+                underscore.map(ref_list, function(ref) {
+                  // TODO create a proper individual when it'll supported by Minerva and Noctua
+                  // var ref_tmp_id = r.add_individual(ref.ref);
+                  // r.add_annotation_to_individual("source", ref_tmp_id, evidence_tmp_id);
+                  r.add_annotation_to_individual("source", ref.ref, null, evidence_tmp_id);
+                });
+              }
+            });
+          }
+
+          // if (reference != "" && reference != null) {
+          //   r.add_annotation_to_individual("source", reference, phenotype_tmp_id, model_id);
+          // }
+
+          if (description !== "" && description !== null) {
+            r.add_annotation_to_individual("comment", description, null, phenotype_tmp_id);
+          }
+
+          if (ageofonset_id !== "" && ageofonset_id !== null) {
+            r.add_fact([phenotype_tmp_id, r.add_individual(ageofonset_id), phenotype_ageofonset_relation]);
+          }
+
+        });
+
+        that.editingSubject = false;
+        r.store_model(model_id);
+        manager.request_with(r, "edit_row");
+      }
     }
     else {
       that.selected_disease = null;
@@ -1229,7 +1407,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
   }
 
   function initializeCallbacks() {
-    manager.register('manager_error', 'manager_errorx', function(resp, man) {
+    manager.register('manager_error', function(resp, man) {
       console.log("manager_error");
       console.log(resp);
       console.log(man);
@@ -1237,15 +1415,15 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       that.displayToast("error", resp._message);
     }, 10);
 
-    manager.register('error', 'errorargh', function(resp, man) {
+    manager.register('error', function(resp, man) {
       console.log("error");
       console.log(resp);
       _shields_down();
       that.displayToast("error", resp._message);
     }, 10);
 
-    manager.register('rebuild', 'foorebuild', manager_changed, 10);
-    manager.register('merge', 'merdge', manager_changed, 10);
+    manager.register('rebuild', manager_changed, 10);
+    manager.register('merge', manager_changed, 10);
   }
 
   function initializeAutocomplete() {
@@ -1271,7 +1449,7 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     that.disease_autocomplete_options = function(onChangeFunc) {
       return {
         onChange: onChangeFunc,
-        required: true,
+        required: false,
         optionDisplay: function(item, escape) {
           return '<div>' +
             item.id + ' (' + item.annotation_class_label_searchable + ')' +
