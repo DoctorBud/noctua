@@ -13,9 +13,13 @@
 /* global model_id */   // from puptent
 /* global global_model_type */   // from puptent
 
+var useNewManager = true;
+
 var jQuery = require('jquery');
 var bbop = require('bbop').bbop;
-// var bbopx = require('bbopx');
+if (!useNewManager) {
+  var bbopx = require('bbopx');
+}
 var underscore = require('underscore');
 var _ = underscore;
 var graph_api = require('bbop-graph-noctua');
@@ -426,15 +430,19 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     else {
       _shields_up();
 
-      var engine = new jquery_engine(barista_response);
-      engine.method('POST');
-      manager = new minerva_manager(global_barista_location,
-                global_minerva_definition_name,
-                user_token, engine, 'async');
+      if (useNewManager) {
+        var engine = new jquery_engine(barista_response);
+        engine.method('POST');
+        manager = new minerva_manager(global_barista_location,
+                  global_minerva_definition_name,
+                  user_token, engine, 'async');
 
-      // manager = new bbopx.minerva.manager(global_barista_location,
-      //   global_minerva_definition_name,
-      //   user_token);
+      }
+      else {
+        manager = new bbopx.minerva.manager(global_barista_location,
+          global_minerva_definition_name,
+          user_token);
+      }
       initializeAutocomplete();
       initializeCallbacks();
       manager.get_model(model_id);
@@ -1303,16 +1311,19 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
       that.saveRowPromise.resolve();
       that.saveRowPromise = null;
     }
+    // console.log('manager_changed graph:', graph);
+    // console.log('manager_changed modelSubject:', that.modelSubject);
+    // console.log('manager_changed individuals:', individuals);
+    // console.log('subjectId:', subjectId);
+    // console.log('that.modelTitle:', that.modelTitle);
+    // console.log('that.newTitle:', that.newTitle);
+    // console.log('that.editingSubject:', that.editingSubject);
+    // console.log('that.importedModel:', that.importedModel);
     if (that.editingSubject) {
       var individuals = data.individuals;
       var subjectId = individuals[0].type[0].id;
+      var r = new minerva_requests.request_set(manager.user_token(), model_id);
 
-      // console.log('manager_changed graph:', graph);
-      // console.log('manager_changed modelSubject:', that.modelSubject);
-      // console.log('manager_changed individuals:', individuals);
-      // console.log('subjectId:', subjectId);
-      // console.log('that.modelTitle:', that.modelTitle);
-      // console.log('that.newTitle:', that.newTitle);
       that.modelSubjectLabel = [subjectId, subjectId];
 
       if (that.importedModel) {
@@ -1321,7 +1332,6 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
         var disease_id = subjectId;
         disease_id = disease_id.replace(/^MESH:/, 'MeSH:');
 
-        var r = new minerva_requests.request_set(manager.user_token(), model_id);
         var existing_disease = r.add_individual(disease_id);
 
         var rowIndex = -1;
@@ -1386,11 +1396,11 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
           }
 
         });
-
-        that.editingSubject = false;
-        r.store_model(model_id);
-        manager.request_with(r, "edit_row");
       }
+
+      that.editingSubject = false;
+      r.store_model(model_id);
+      manager.request_with(r, "edit_row");
     }
     else {
       that.selected_disease = null;
@@ -1406,24 +1416,36 @@ function NoctuaBasicController($q, $scope, $animate, $timeout, $interval, $locat
     }
   }
 
+
+ function manager_error_handler(resp, man) {
+    console.log("manager_error");
+    console.log(resp);
+    console.log(man);
+    _shields_down();
+    that.displayToast("error", resp._message);
+  }
+
+
+  function error_handler(resp, man) {
+    console.log("error");
+    console.log(resp);
+    _shields_down();
+    that.displayToast("error", resp._message);
+  }
+
   function initializeCallbacks() {
-    manager.register('manager_error', function(resp, man) {
-      console.log("manager_error");
-      console.log(resp);
-      console.log(man);
-      _shields_down();
-      that.displayToast("error", resp._message);
-    }, 10);
-
-    manager.register('error', function(resp, man) {
-      console.log("error");
-      console.log(resp);
-      _shields_down();
-      that.displayToast("error", resp._message);
-    }, 10);
-
-    manager.register('rebuild', manager_changed, 10);
-    manager.register('merge', manager_changed, 10);
+    if (useNewManager) {
+      manager.register('manager_error', manager_error_handler, 10);
+      manager.register('error', error_handler, 10);
+      manager.register('rebuild', manager_changed, 10);
+      manager.register('merge', manager_changed, 10);
+    }
+    else {
+      manager.register('manager_error', 'manager_errorx', manager_error, 10);
+      manager.register('error', 'errorargh', error_handler, 10);
+      manager.register('rebuild', 'foorebuild', manager_changed, 10);
+      manager.register('merge', 'merdge', manager_changed, 10);
+    }
   }
 
   function initializeAutocomplete() {
